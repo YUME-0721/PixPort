@@ -1,0 +1,22 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+    
+    # 静态资源直接访问
+    RewriteRule ^(public|images|converted|data)/(.*)$ $0 [L]
+    
+    # API 路由
+    RewriteRule ^image_api\.php$ app/api/image_api.php [L]
+    
+    # 页面路由
+    RewriteRule ^index\.php$ app/pages/index.php [L]
+    RewriteRule ^upload\.php$ app/pages/upload.php [L]
+    RewriteRule ^gallery\.php$ app/pages/gallery.php [L]
+    RewriteRule ^panel\.php$ app/pages/panel.php [L]
+    RewriteRule ^file\.php$ app/pages/file.php [L]
+    RewriteRule ^api-panel\.php$ app/pages/api-panel.php [L]
+    RewriteRule ^external-manager\.php$ app/pages/external-manager.php [L]
+    
+    # 根路径重定向到 index.php
+    RewriteRule ^$ app/pages/index.php [L]
+</IfModule>

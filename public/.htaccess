@@ -1,0 +1,5 @@
+# 允许访问静态资源
+<FilesMatch "\.(jpg|jpeg|png|gif|svg|css|js|woff|woff2|ttf|eot)$">
+    Order allow,deny
+    Allow from all
+</FilesMatch>
