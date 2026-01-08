@@ -1,12 +1,25 @@
 <?php
-// 密码保护配置（从环境变量读取）
-$adminPassword = getenv('ADMIN_PASSWORD') ?: 'admin123'; // 默认密码：admin123
+// 登录配置
+$adminUser = getenv('ADMIN_USER') ?: 'admin';         // 默认用户名
+$adminPassword = getenv('ADMIN_PASSWORD') ?: 'admin123'; // 默认密码
+$loginBg = '/public/assets/images/backend-picture.jpg'; // 默认背景
 
-// 检查密码
+// 加载系统配置覆盖默认值
+$systemConfigFile = dirname(__DIR__, 2) . '/config/system-config.json';
+if (file_exists($systemConfigFile)) {
+    $config = json_decode(file_get_contents($systemConfigFile), true);
+    if (is_array($config)) {
+        if (!empty($config['admin_user'])) $adminUser = $config['admin_user'];
+        if (!empty($config['admin_password'])) $adminPassword = $config['admin_password'];
+        if (!empty($config['login_background_url'])) $loginBg = $config['login_background_url'];
+    }
+}
+
+// 检查登录
 session_start();
 
-if (isset($_POST['password'])) {
-    if ($_POST['password'] === $adminPassword) {
+if (isset($_POST['username']) && isset($_POST['password'])) {
+    if ($_POST['username'] === $adminUser && $_POST['password'] === $adminPassword) {
         $_SESSION['authenticated'] = true;
         header('Location: ' . $_SERVER['PHP_SELF']);
         exit;
@@ -44,7 +57,7 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
             }
             body {
                 font-family: Arial, sans-serif;
-                background: url('/public/assets/images/backend-picture.jpg') no-repeat center center fixed;
+                background: url('<?php echo $loginBg; ?>') no-repeat center center fixed;
                 background-size: cover;
                 min-height: 100vh;
                 display: flex;
@@ -58,7 +71,7 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
                 top: 0;
                 left: 0;
                 width: 100%;
-                padding: 15px 30px;
+                padding: 0 30px;
                 z-index: 100;
                 backdrop-filter: blur(10px);
                 background: rgba(255, 255, 255, 0.05);
@@ -73,17 +86,17 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
                 align-items: center;
             }
             .site-logo {
-                height: 48px;
+                height: 64px;
                 width: auto;
                 filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.3));
             }
             .doc-link {
                 display: flex;
                 align-items: center;
-                gap: 6px;
+                gap: 8px;
                 color: white;
                 text-decoration: none;
-                font-size: 16px;
+                font-size: 20px;
                 font-weight: 500;
                 transition: opacity 0.3s;
             }
@@ -91,8 +104,8 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
                 opacity: 0.8;
             }
             .doc-link svg {
-                width: 20px;
-                height: 20px;
+                width: 28px;
+                height: 28px;
                 filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
             }
             body::before {
@@ -141,28 +154,47 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
                 text-align: center;
                 color: #888;
                 font-size: 15px;
-                margin-bottom: 30px;
+                margin-bottom: 10px;
                 letter-spacing: 3px;
                 text-transform: uppercase;
             }
             .form-group {
                 margin-bottom: 20px;
+                position: relative;
             }
-            label {
-                display: block;
-                margin-bottom: 8px;
-                color: #555;
-                font-weight: bold;
+            .input-wrapper {
+                position: relative;
+                width: 100%;
             }
+            .input-icon {
+                position: absolute;
+                right: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 22px;
+                height: 22px;
+                color: #999;
+                pointer-events: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .input-icon svg {
+                width: 100%;
+                height: 100%;
+            }
+            input[type="text"],
             input[type="password"] {
                 width: 100%;
-                padding: 14px;
+                padding: 12px;
+                padding-right: 42px;
                 border: 2px solid #e0e0e0;
                 border-radius: 8px;
                 font-size: 16px;
                 box-sizing: border-box;
                 transition: all 0.3s ease;
             }
+            input[type="text"]:focus,
             input[type="password"]:focus {
                 outline: none;
                 border-color: #667eea;
@@ -230,8 +262,20 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
             <?php endif; ?>
             <form method="POST">
                 <div class="form-group">
-                    <label for="password">访问密码：</label>
-                    <input type="password" id="password" name="password" required autofocus>
+                    <div class="input-wrapper">
+                        <input type="text" id="username" name="username" placeholder="请输入用户名" required autofocus>
+                        <div class="input-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"><circle cx="24" cy="11" r="7"/><path d="M4 41c0-8.837 8.059-16 18-16m9 17l10-10l-4-4l-10 10v4z"/></g></svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <input type="password" id="password" name="password" placeholder="请输入密码" required>
+                        <div class="input-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M12 17a2 2 0 0 1-2-2c0-1.11.89-2 2-2a2 2 0 0 1 2 2a2 2 0 0 1-2 2m6 3V10H6v10zm0-12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10c0-1.11.89-2 2-2h1V6a5 5 0 0 1 5-5a5 5 0 0 1 5 5v2zm-6-5a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3"/></svg>
+                        </div>
+                    </div>
                 </div>
                 <button type="submit">登录</button>
             </form>

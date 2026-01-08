@@ -16,6 +16,19 @@ if (isset($_GET['logout'])) {
 // 引入数据库连接类
 require_once __DIR__ . '/../../includes/Database.php';
 
+// 加载系统配置
+$systemConfigFile = dirname(__DIR__, 2) . '/config/system-config.json';
+$systemConfig = [
+    'background_url' => '/public/assets/images/home-backend.jpg'
+];
+if (file_exists($systemConfigFile)) {
+    $loadedConfig = json_decode(file_get_contents($systemConfigFile), true);
+    if (is_array($loadedConfig)) {
+        $systemConfig = array_merge($systemConfig, $loadedConfig);
+    }
+}
+$currentBg = $systemConfig['background_url'];
+
 // 相册管理函数
 function getAlbumsData() {
     $albumFile = __DIR__ . '/data/albums.json';
@@ -248,7 +261,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         if ($success) {
             // 异步刷新图片统计
             session_write_close();
-            @file_get_contents('http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . '/file.php?refresh=stats', false, stream_context_create([
+            @file_get_contents('http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . '/panel.php?refresh=stats', false, stream_context_create([
                 'http' => ['timeout' => 1, 'ignore_errors' => true]
             ]));
             echo json_encode(['success' => true, 'message' => $message]);
@@ -307,7 +320,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         
         // 异步刷新图片统计
         session_write_close();
-        @file_get_contents('http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . '/file.php?refresh=stats', false, stream_context_create([
+        @file_get_contents('http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . '/panel.php?refresh=stats', false, stream_context_create([
             'http' => ['timeout' => 1, 'ignore_errors' => true]
         ]));
         
@@ -355,9 +368,24 @@ function getImageDetails($page = 1, $perPage = 50, $type = 'all', $format = 'all
                     continue;
                 }
                 
+                // 原始文件名处理逻辑
+                $originalName = $row['original_name'] ?: $row['filename'];
+                
+                // 如果数据库中没有原始文件名，尝试从元数据中读取
+                if ($originalName === $row['filename'] && $row['local_path']) {
+                    $dir = dirname($row['local_path']);
+                    $metaFile = $dir . '/.metadata.json';
+                    if (file_exists($metaFile)) {
+                        $metadata = json_decode(file_get_contents($metaFile), true) ?: [];
+                        if (isset($metadata[$row['filename']]['original_name'])) {
+                            $originalName = $metadata[$row['filename']]['original_name'];
+                        }
+                    }
+                }
+                
                 $images[] = [
                     'filename' => $row['filename'],
-                    'original_name' => $row['filename'],
+                    'original_name' => $originalName,
                     'path' => $row['local_path'],
                     'url' => $row['url'],
                     'size' => $row['file_size'] ?? 0,
@@ -405,9 +433,10 @@ function getImageDetails($page = 1, $perPage = 50, $type = 'all', $format = 'all
             $dbImages = $db->fetchAll($sql, $params);
             
             foreach ($dbImages as $row) {
+                $originalName = $row['original_name'] ?: basename(parse_url($row['url'], PHP_URL_PATH));
                 $images[] = [
                     'filename' => $row['filename'],
-                    'original_name' => basename(parse_url($row['url'], PHP_URL_PATH)),
+                    'original_name' => $originalName,
                     'path' => '',
                     'url' => $row['url'],
                     'size' => $row['file_size'] ?? 0,
@@ -664,7 +693,7 @@ $totalPages = ceil($totalImages / $perPage);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/svg+xml" href="/public/assets/svg/favicon.svg">
-    <title>h - PixPort</title>
+    <title>画廊 - PixPort</title>
     <style>
         * {
             margin: 0;
@@ -673,7 +702,7 @@ $totalPages = ceil($totalImages / $perPage);
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-            background: url('/public/assets/images/home-backend.jpg') no-repeat center center fixed;
+            background: url('<?php echo $currentBg; ?>') no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
             padding: 20px;
@@ -730,42 +759,110 @@ $totalPages = ceil($totalImages / $perPage);
             background: #c82333;
             transform: translateY(-2px);
         }
-        .tabs {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+        /* 侧边栏样式 */
+        .sidebar {
+            position: fixed;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
             display: flex;
+            flex-direction: column;
             gap: 10px;
-            position: relative;
-            z-index: 1;
-        }
-        .tab-btn {
-            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 16px;
             padding: 12px;
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            z-index: 1000;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 200px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        .sidebar.collapsed {
+            width: 66px;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.8);
             cursor: pointer;
+            font-weight: 600;
             transition: all 0.3s;
-            color: white;
+            white-space: nowrap;
+            width: 100%;
+            justify-content: flex-start;
+            font-size: 15px;
             text-decoration: none;
+        }
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+        .sidebar.collapsed .nav-item {
+            padding: 12px;
+            justify-content: center;
+        }
+        .sidebar.collapsed .btn-text {
+            display: none;
+        }
+        .toggle-btn {
+            margin-top: 5px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 15px;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            color: white;
+            display: flex;
+            width: 100%;
+        }
+        
+        /* 悬浮退出按钮 */
+        .floating-logout {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 54px;
+            height: 54px;
+            background: rgba(220, 53, 69, 0.2);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            color: white;
+            text-decoration: none;
+            z-index: 9999;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
-        .tab-btn.active {
-            background: rgba(255, 255, 255, 0.4);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        .floating-logout:hover {
+            background: rgba(220, 53, 69, 0.5);
+            transform: scale(1.1) rotate(-10deg);
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 12px 40px rgba(220, 53, 69, 0.4);
         }
-        .tab-btn:hover:not(.active) {
-            background: rgba(255, 255, 255, 0.3);
+        .floating-logout svg {
+            width: 26px;
+            height: 26px;
         }
         .container {
             max-width: 1400px;
@@ -1178,11 +1275,12 @@ $totalPages = ceil($totalImages / $perPage);
             max-height: 50vh;
             object-fit: contain;
             border-radius: 8px;
-            cursor: zoom-in;
-            transition: transform 0.3s;
+            cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3Cline x1='11' y1='8' x2='11' y2='14'%3E%3C/line%3E%3Cline x1='8' y1='11' x2='14' y2='11'%3E%3C/line%3E%3C/svg%3E") 16 16, zoom-in;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .modal-image img:hover {
-            transform: scale(1.02);
+            transform: scale(1.03);
+            filter: brightness(1.1);
         }
         
         /* 全屏查看器 */
@@ -1193,13 +1291,13 @@ $totalPages = ceil($totalImages / $perPage);
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.95);
+            background: rgba(0, 0, 0, 0.98);
             z-index: 10001;
-            cursor: zoom-out;
+            cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3Cline x1='8' y1='11' x2='14' y2='11'%3E%3C/line%3E%3C/svg%3E") 16 16, zoom-out;
             align-items: center;
             justify-content: center;
             opacity: 0;
-            transition: opacity 0.3s;
+            transition: all 0.4s ease;
         }
         .fullscreen-viewer.active {
             display: flex;
@@ -1227,60 +1325,89 @@ $totalPages = ceil($totalImages / $perPage);
             height: 100%;
         }
         .modal-details {
-            width: 450px;
-            max-height: calc(90vh - 40px); /* 减去 padding */
+            width: 320px;
+            max-height: calc(90vh - 40px);
             color: white;
             overflow-y: auto;
             flex-shrink: 0;
+            padding-left: 10px;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
         }
         @media (max-width: 768px) {
             .modal-details {
                 width: 100% !important;
+                border-left: none;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+                padding-top: 20px;
+                padding-left: 0;
             }
         }
         @media (min-width: 769px) {
             .modal-content.mobile-image .modal-details {
-                width: 400px;
+                width: 280px;
             }
         }
         .modal-details h3 {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             padding-bottom: 10px;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 22px;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
         .delete-single-btn {
-            padding: 8px 16px;
-            background: rgba(220, 53, 69, 0.8);
-            color: white;
-            border: none;
-            border-radius: 6px;
+            position: absolute;
+            top: 25px;
+            right: 85px;
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ff4d4f;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
             cursor: pointer;
-            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: all 0.3s;
-            font-size: 14px;
+            z-index: 10000;
+            backdrop-filter: blur(5px);
         }
         .delete-single-btn:hover {
-            background: rgba(220, 53, 69, 1);
+            background: rgba(220, 53, 69, 0.8);
+            color: white;
+            border-color: transparent;
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+        }
+        .delete-single-btn svg {
+            width: 24px;
+            height: 24px;
         }
         .detail-item {
-            margin-bottom: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
         }
         .detail-label {
             font-weight: 600;
-            opacity: 0.8;
-            margin-bottom: 5px;
+            opacity: 0.6;
+            font-size: 13px;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
         .detail-value {
-            font-size: 14px;
-            word-break: break-all;
-            padding: 8px;
-            background: rgba(0, 0, 0, 0.3);
+            font-size: 13px;
+            padding: 4px 8px;
+            background: rgba(0, 0, 0, 0.2);
             border-radius: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+            text-align: right;
+            max-width: 200px;
         }
         .tab-container {
             background: rgba(255, 255, 255, 0.15);
@@ -1288,7 +1415,7 @@ $totalPages = ceil($totalImages / $perPage);
             -webkit-backdrop-filter: blur(10px);
             border-radius: 8px;
             padding: 12px;
-            margin-top: 15px;
+            margin-top: 35px;
             width: 100%;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
@@ -1567,21 +1694,154 @@ $totalPages = ceil($totalImages / $perPage);
             padding: 6px 12px;
             font-size: 13px;
         }
-        .album-btn.delete:hover {
+        /* 状态遮罩层 */
+        .status-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(15px);
+            z-index: 100000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .status-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+        .status-icon {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+        }
+        .status-text {
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 优雅的确认对话框 */
+        .confirm-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 99998;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        .confirm-modal.active {
+            display: flex;
+            opacity: 1;
+        }
+        .confirm-content {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            padding: 35px;
+            width: 90%;
+            max-width: 420px;
+            text-align: center;
+            color: white;
+            transform: scale(0.9);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .confirm-modal.active .confirm-content {
+            transform: scale(1);
+        }
+        .confirm-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #ff4d4f;
+        }
+        .confirm-message {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .confirm-btns {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        .confirm-btn {
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            min-width: 100px;
+        }
+        .confirm-btn.cancel {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .confirm-btn.cancel:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .confirm-btn.danger {
+            background: #ff4d4f;
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 77, 79, 0.3);
+        }
+        .confirm-btn.danger:hover {
+            background: #ff7875;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 77, 79, 0.4);
+        }
             background: rgba(220, 53, 69, 1);
         }
-        .album-modal-close {
+        .album-select-close {
             position: absolute;
             top: 15px;
-            right: 20px;
-            font-size: 30px;
-            color: white;
+            right: 15px;
+            width: 32px;
+            height: 32px;
+            color: rgba(255, 255, 255, 0.4);
             cursor: pointer;
-            line-height: 1;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
         }
-        .album-modal-close:hover {
-            transform: scale(1.2);
+        .album-select-close:hover {
+            color: #ff4d4f;
+            transform: rotate(90deg) scale(1.1);
+        }
+        .album-select-close svg {
+            width: 24px;
+            height: 24px;
         }
         .album-select-modal {
             display: none;
@@ -1629,9 +1889,62 @@ $totalPages = ceil($totalImages / $perPage);
             color: white;
             font-weight: 600;
         }
-        .album-select-item:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
+        .album-select-item.create-mode {
+            cursor: default;
+            padding: 10px 15px;
+        }
+        .album-select-item .create-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            cursor: pointer;
+        }
+        .album-select-item .create-input-wrapper {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+        .album-select-item.active-input .create-label {
+            display: none;
+        }
+        .album-select-item.active-input .create-input-wrapper {
+            display: flex;
+        }
+        .create-inline-input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: white;
+            font-size: 14px;
+            outline: none;
+        }
+        .create-inline-input:focus {
+            border-color: #28a745;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        .create-confirm-btn {
+            background: transparent;
+            border: none;
+            color: #28a745;
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+            line-height: 0;
+        }
+        .create-confirm-btn:hover {
+            transform: scale(1.2);
+        }
+        .create-confirm-btn svg {
+            width: 24px;
+            height: 24px;
         }
     </style>
 </head>
@@ -1640,22 +1953,35 @@ $totalPages = ceil($totalImages / $perPage);
         <a href="/upload.php" style="text-decoration: none;">
             <h1 style="cursor: pointer;">
                 <img src="/public/assets/images/logo-white.png" alt="PixPort" class="logo-img">
-                <span>- 后台管理</span>
+                <span>- 图片画廊</span>
             </h1>
         </a>
-        <div style="display: flex; gap: 10px;">
-            <a href="/upload.php" style="padding: 10px 20px; background: #667eea; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.background='#5568d3'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='#667eea'; this.style.transform='translateY(0)'">🏠 返回主页</a>
-            <a href="?logout=1" class="logout-btn">🚪 退出登录</a>
-        </div>
     </div>
 
-    <div class="tabs">
-        <a href="/panel.php?tab=system" class="tab-btn">📊 系统监控</a>
-        <a href="/panel.php?tab=database" class="tab-btn">🗄️ 数据库监控</a>
-        <a href="/file.php" class="tab-btn">🖼️ 图片管理</a>
-        <a href="/gallery.php" class="tab-btn active">🎨 图片画廊</a>
-        <a href="/external-manager.php" class="tab-btn">🔗 外链管理</a>
-        <a href="/api-panel.php" class="tab-btn">🔧 API管理</a>
+    <div class="sidebar" id="sidebar">
+        <a href="/upload.php" class="nav-item">
+            <span class="btn-icon">📤</span>
+            <span class="btn-text">上传图片</span>
+        </a>
+        <div class="nav-item active">
+            <span class="btn-icon">🎨</span>
+            <span class="btn-text">图片画廊</span>
+        </div>
+        <a href="/panel.php" class="nav-item">
+            <span class="btn-icon">📊</span>
+            <span class="btn-text">监控面板</span>
+        </a>
+        <a href="/api-panel.php" class="nav-item">
+            <span class="btn-icon">🔧</span>
+            <span class="btn-text">API管理</span>
+        </a>
+        <a href="/system-panel.php" class="nav-item">
+            <span class="btn-icon">⚙️</span>
+            <span class="btn-text">系统设置</span>
+        </a>
+        <div class="toggle-btn" onclick="toggleSidebar()">
+            <span id="toggleIcon">⬅️</span>
+        </div>
     </div>
 
     <div class="container">
@@ -1791,8 +2117,8 @@ $totalPages = ceil($totalImages / $perPage);
                         <input type="checkbox" class="select-checkbox" onclick="event.stopPropagation(); toggleSelect(this)">
                         <img src="<?php echo htmlspecialchars($img['url']); ?>" alt="<?php echo htmlspecialchars($img['filename']); ?>" loading="lazy" onclick="showModal(<?php echo htmlspecialchars(json_encode($img, JSON_HEX_APOS | JSON_HEX_QUOT)); ?>)">
                         <div class="image-info">
-                            <div class="image-name" title="<?php echo htmlspecialchars($img['filename']); ?>">
-                                <?php echo htmlspecialchars($img['filename']); ?>
+                            <div class="image-name" title="<?php echo htmlspecialchars($img['original_name']); ?>">
+                                <?php echo htmlspecialchars($img['original_name']); ?>
                             </div>
                             <div class="image-meta">
                                 <span class="meta-tag type-<?php echo $img['type']; ?>">
@@ -1843,6 +2169,9 @@ $totalPages = ceil($totalImages / $perPage);
     <!-- 模态框 -->
     <div id="imageModal" class="modal">
         <span class="close-btn" onclick="closeModal()">&times;</span>
+        <button class="delete-single-btn" onclick="deleteSingleImage()" title="删除图片">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M9.774 5L3.758 3.94l.174-.986a.5.5 0 0 1 .58-.405L18.411 5h.088h-.087l1.855.327a.5.5 0 0 1 .406.58l-.174.984l-2.09-.368l-.8 13.594A2 2 0 0 1 15.615 22H8.386a2 2 0 0 1-1.997-1.883L5.59 6.5h12.69zH5.5zM9 9l.5 9H11l-.4-9zm4.5 0l-.5 9h1.5l.5-9zm-2.646-7.871l3.94.694a.5.5 0 0 1 .405.58l-.174.984l-4.924-.868l.174-.985a.5.5 0 0 1 .58-.405z"/></svg>
+        </button>
         <div class="modal-content">
             <div class="modal-image-wrapper">
                 <div class="modal-image">
@@ -1894,7 +2223,6 @@ $totalPages = ceil($totalImages / $perPage);
             <div class="modal-details">
                 <h3>
                     <span>📄 图片详情</span>
-                    <button class="delete-single-btn" onclick="deleteSingleImage()" style="background: transparent; color: white; border: 1px solid rgba(255, 255, 255, 0.3); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.3s;">删除</button>
                 </h3>
                 <div class="detail-item">
                     <div class="detail-label">文件名</div>
@@ -1943,9 +2271,11 @@ $totalPages = ceil($totalImages / $perPage);
 
 
     <!-- 选择相册弹窗 -->
-    <div id="albumSelectModal" class="album-select-modal">
+    <div id="albumSelectModal" class="album-select-modal" onclick="if(event.target === this) closeAlbumSelectModal()">
         <div class="album-select-content">
-            <span class="album-modal-close" onclick="closeAlbumSelectModal()">&times;</span>
+            <div class="album-select-close" onclick="closeAlbumSelectModal()" title="关闭">
+                <svg xmlns="http://www.w3.org/2000/svg" width="2048" height="2048" viewBox="0 0 2048 2048"><path fill="currentColor" d="M1024 0q141 0 272 36t244 104t207 160t161 207t103 245t37 272q0 141-36 272t-104 244t-160 207t-207 161t-245 103t-272 37q-141 0-272-36t-244-104t-207-160t-161-207t-103-245t-37-272q0-141 36-272t104-244t160-207t207-161T752 37t272-37m0 1920q124 0 238-32t214-90t181-140t140-181t91-214t32-239t-32-238t-90-214t-140-181t-181-140t-214-91t-239-32t-238 32t-214 90t-181 140t-140 181t-91 214t-32 239t32 238t90 214t140 181t181 140t214 91t239 32m443-1249l-352 353l352 353l-90 90l-353-352l-353 352l-90-90l352-353l-352-353l90-90l353 352l353-352z"/></svg>
+            </div>
             <h2>📚 选择相册</h2>
             <div class="album-select-list" id="albumSelectList">
                 <?php foreach ($albums as $albumId => $album): ?>
@@ -1953,6 +2283,20 @@ $totalPages = ceil($totalImages / $perPage);
                     <?php echo htmlspecialchars($album['name']); ?> (<?php echo count($album['images']); ?>)
                 </div>
                 <?php endforeach; ?>
+                
+                <!-- 新增相册项 -->
+                <div class="album-select-item create-mode" id="createAlbumItemModal" style="border-style: dashed; background: rgba(40, 167, 69, 0.1); color: #28a745;">
+                    <div class="create-label" onclick="toggleCreateInputModal(event)">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        <span>新增相册</span>
+                    </div>
+                    <div class="create-input-wrapper">
+                        <input type="text" class="create-inline-input" id="createAlbumInputModal" placeholder="相册名称..." onclick="event.stopPropagation()" onkeyup="handleCreateKeyModal(event)">
+                        <button class="create-confirm-btn" onclick="confirmCreateModal(event)" title="确认创建">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" d="M3 12c0 -4.97 4.03 -9 9 -9c4.97 0 9 4.03 9 9c0 4.97 -4.03 9 -9 9c-4.97 0 -9 -4.03 -9 -9Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.6s" values="60;0"/></path><path stroke-dasharray="14" stroke-dashoffset="14" d="M8 12l3 3l5 -5"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" to="0"/></path></g></svg>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1962,7 +2306,56 @@ $totalPages = ceil($totalImages / $perPage);
         <img id="fullscreenImage" src="" alt="Full Screen">
     </div>
 
+    <!-- 优雅的确认对话框 -->
+    <div id="confirmModal" class="confirm-modal">
+        <div class="confirm-content">
+            <div id="confirmTitle" class="confirm-title">确认删除</div>
+            <div id="confirmMessage" class="confirm-message">确认执行此操作吗？</div>
+            <div class="confirm-btns">
+                <button class="confirm-btn cancel" onclick="closeConfirmModal()">取消</button>
+                <button id="confirmBtn" class="confirm-btn danger">确认删除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 状态遮罩层 -->
+    <div id="statusOverlay" class="status-overlay">
+        <div id="statusIconContainer" class="status-icon">
+            <div class="spinner"></div>
+        </div>
+        <div id="statusText" class="status-text">正在处理...</div>
+    </div>
+
+    <a href="?logout=1" class="floating-logout" title="退出登录">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 4.001H5v14a2 2 0 0 0 2 2h8m1-5l3-3m0 0l-3-3m3 3H9"/></svg>
+    </a>
+
     <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('toggleIcon');
+            sidebar.classList.toggle('collapsed');
+            
+            if (sidebar.classList.contains('collapsed')) {
+                icon.innerText = '➡️';
+                localStorage.setItem('sidebarCollapsed', 'true');
+            } else {
+                icon.innerText = '⬅️';
+                localStorage.setItem('sidebarCollapsed', 'false');
+            }
+        }
+
+        // 页面加载时恢复侧边栏状态
+        window.addEventListener('DOMContentLoaded', () => {
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (isCollapsed) {
+                const sidebar = document.getElementById('sidebar');
+                const icon = document.getElementById('toggleIcon');
+                if (sidebar) sidebar.classList.add('collapsed');
+                if (icon) icon.innerText = '➡️';
+            }
+        });
+
         let selectedImages = new Map(); // 使用 Map 存储 {identifier: {path, url}}
         let currentImagePath = '';
         let currentImageUrl = '';
@@ -2137,57 +2530,106 @@ $totalPages = ceil($totalImages / $perPage);
             if (removeBtn) removeBtn.disabled = count === 0;
         }
         
+        // 状态遮罩管理
+        function showStatusOverlay(text, type = 'loading') {
+            const overlay = document.getElementById('statusOverlay');
+            const iconContainer = document.getElementById('statusIconContainer');
+            const textEl = document.getElementById('statusText');
+            
+            textEl.textContent = text;
+            
+            if (type === 'loading') {
+                iconContainer.innerHTML = '<div class="spinner"></div>';
+            } else if (type === 'success') {
+                iconContainer.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#28a745" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+            } else if (type === 'error') {
+                iconContainer.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#dc3545" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+            }
+            
+            overlay.classList.add('active');
+        }
+
+        function hideStatusOverlay() {
+            document.getElementById('statusOverlay').classList.remove('active');
+        }
+
+        // 自定义确认框
+        function showConfirm(title, message, callback) {
+            const modal = document.getElementById('confirmModal');
+            document.getElementById('confirmTitle').textContent = title;
+            document.getElementById('confirmMessage').textContent = message;
+            const btn = document.getElementById('confirmBtn');
+            
+            btn.onclick = () => {
+                closeConfirmModal();
+                callback();
+            };
+            
+            modal.classList.add('active');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.remove('active');
+        }
+
         async function batchDelete() {
             if (selectedImages.size === 0) return;
             
-            if (!confirm(`确认删除选中的 ${selectedImages.size} 张图片？`)) return;
-            
-            const items = Array.from(selectedImages.values());
-            
-            try {
-                const response = await fetch(window.location.href, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: `action=batch_delete&items=${encodeURIComponent(JSON.stringify(items))}`
-                });
+            showConfirm('批量删除', `确认删除选中的 ${selectedImages.size} 张图片吗？此操作不可撤销。`, async () => {
+                const items = Array.from(selectedImages.values());
+                showStatusOverlay('正在删除...', 'loading');
                 
-                const result = await response.json();
-                
-                if (result.success) {
-                    showNotification(result.message);
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    showNotification(result.message, 'error');
+                try {
+                    const response = await fetch(window.location.href, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: `action=batch_delete&items=${encodeURIComponent(JSON.stringify(items))}`
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showStatusOverlay('删除成功', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        hideStatusOverlay();
+                        showNotification(result.message, 'error');
+                    }
+                } catch (error) {
+                    hideStatusOverlay();
+                    showNotification('删除失败', 'error');
                 }
-            } catch (error) {
-                showNotification('删除失败', 'error');
-            }
+            });
         }
         
         async function deleteSingleImage() {
             if (!currentImagePath && !currentImageUrl) return;
             
-            if (!confirm('确认删除这张图片？')) return;
-            
-            try {
-                const response = await fetch(window.location.href, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: `action=delete&path=${encodeURIComponent(currentImagePath)}&url=${encodeURIComponent(currentImageUrl)}`
-                });
+            showConfirm('确认删除', '确认删除这张图片吗？此操作不可撤销。', async () => {
+                showStatusOverlay('正在删除...', 'loading');
                 
-                const result = await response.json();
-                
-                if (result.success) {
-                    showNotification(result.message);
-                    closeModal();
-                    setTimeout(() => location.reload(), 1000);
-                } else {
-                    showNotification(result.message, 'error');
+                try {
+                    const response = await fetch(window.location.href, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: `action=delete&path=${encodeURIComponent(currentImagePath)}&url=${encodeURIComponent(currentImageUrl)}`
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showStatusOverlay('删除成功', 'success');
+                        closeModal();
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        hideStatusOverlay();
+                        showNotification(result.message, 'error');
+                    }
+                } catch (error) {
+                    hideStatusOverlay();
+                    showNotification('删除失败', 'error');
                 }
-            } catch (error) {
-                showNotification('删除失败', 'error');
-            }
+            });
         }
         
         // 相册管理函数
@@ -2306,6 +2748,62 @@ $totalPages = ceil($totalImages / $perPage);
         function showAddToAlbumModal() {
             if (selectedImages.size === 0) return;
             document.getElementById('albumSelectModal').classList.add('active');
+        }
+
+        function toggleCreateInputModal(event) {
+            event.stopPropagation();
+            document.getElementById('createAlbumItemModal').classList.add('active-input');
+            const input = document.getElementById('createAlbumInputModal');
+            input.focus();
+        }
+
+        function handleCreateKeyModal(event) {
+            if (event.key === 'Enter') {
+                confirmCreateModal(event);
+            } else if (event.key === 'Escape') {
+                cancelCreateModal();
+            }
+        }
+
+        function cancelCreateModal() {
+            const item = document.getElementById('createAlbumItemModal');
+            const input = document.getElementById('createAlbumInputModal');
+            item.classList.remove('active-input');
+            input.value = '';
+        }
+
+        async function confirmCreateModal(event) {
+            if (event) event.stopPropagation();
+            const input = document.getElementById('createAlbumInputModal');
+            const name = input.value.trim();
+            
+            if (!name) {
+                cancelCreateModal();
+                return;
+            }
+
+            try {
+                showStatusOverlay('正在创建相册...', 'loading');
+                // 1. 创建相册
+                const createResponse = await fetch(window.location.href, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: `action=create_album&name=${encodeURIComponent(name)}`
+                });
+                const createResult = await createResponse.json();
+
+                if (!createResult.success) {
+                    hideStatusOverlay();
+                    showNotification(createResult.message, 'error');
+                    return;
+                }
+
+                // 2. 将图片添加到新创建的相册
+                await addToAlbum(createResult.album_id);
+            } catch (error) {
+                hideStatusOverlay();
+                showNotification('操作失败', 'error');
+            }
         }
         
         function closeAlbumSelectModal() {
@@ -2450,21 +2948,28 @@ $totalPages = ceil($totalImages / $perPage);
             modalImg.src = imageData.url;
             modalImg.onclick = () => openFullscreen(imageData.url);
             
-            document.getElementById('detailFilename').textContent = imageData.filename;
-            document.getElementById('detailOriginalName').textContent = imageData.original_name;
-            document.getElementById('detailPath').textContent = imageData.path || imageData.url; // 如果本地路径为空，则显示 URL
-            document.getElementById('detailUrl').textContent = imageData.url;
-            document.getElementById('detailSize').textContent = imageData.size_formatted + ' (' + imageData.size + ' bytes)';
-            document.getElementById('detailDimensions').textContent = imageData.dimensions;
-            document.getElementById('detailType').textContent = imageData.type.toUpperCase() + ' (' + (imageData.type === 'pc' ? '桌面端' : '移动端') + ')';
-            document.getElementById('detailFormat').textContent = imageData.format.toUpperCase();
-            document.getElementById('detailTime').textContent = imageData.upload_time;
-            document.getElementById('detailUploaderIP').textContent = imageData.uploader_ip;
+            // 填充详情并添加 title 提示，确保单行截断
+            const setDetail = (id, text) => {
+                const el = document.getElementById(id);
+                el.textContent = text || 'N/A';
+                el.title = text || 'N/A';
+            };
+
+            setDetail('detailFilename', imageData.filename);
+            setDetail('detailOriginalName', imageData.original_name);
+            setDetail('detailPath', imageData.path || imageData.url);
+            setDetail('detailUrl', imageData.url);
+            setDetail('detailSize', imageData.size_formatted + ' (' + imageData.size + ' bytes)');
+            setDetail('detailDimensions', imageData.dimensions);
+            setDetail('detailType', imageData.type.toUpperCase() + ' (' + (imageData.type === 'pc' ? '桌面端' : '移动端') + ')');
+            setDetail('detailFormat', imageData.format.toUpperCase());
+            setDetail('detailTime', imageData.upload_time);
+            setDetail('detailUploaderIP', imageData.uploader_ip);
             
             // 设置各种格式的链接
             document.getElementById('urlLink-modal').value = imageData.url;
-            document.getElementById('htmlLink-modal').value = `<img src="${imageData.url}" alt="${imageData.filename}">`;
-            document.getElementById('markdownLink-modal').value = `![${imageData.filename}](${imageData.url})`;
+            document.getElementById('htmlLink-modal').value = `<img src="${imageData.url}" alt="${imageData.original_name}">`;
+            document.getElementById('markdownLink-modal').value = `![${imageData.original_name}](${imageData.url})`;
             document.getElementById('bbcodeLink-modal').value = `[img]${imageData.url}[/img]`;
             
             // 如果是移动端图片，在PC端显示时优化布局
@@ -2510,6 +3015,8 @@ $totalPages = ceil($totalImages / $perPage);
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeModal();
+                closeAlbumSelectModal();
+                closeFullscreen();
             }
         });
         
@@ -2547,6 +3054,31 @@ $totalPages = ceil($totalImages / $perPage);
             showNotification('已复制到剪贴板');
         }
         
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('toggleIcon');
+            sidebar.classList.toggle('collapsed');
+            
+            if (sidebar.classList.contains('collapsed')) {
+                icon.innerText = '➡️';
+                localStorage.setItem('sidebarCollapsed', 'true');
+            } else {
+                icon.innerText = '⬅️';
+                localStorage.setItem('sidebarCollapsed', 'false');
+            }
+        }
+
+        // 页面加载时恢复侧边栏状态
+        window.addEventListener('DOMContentLoaded', () => {
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (isCollapsed) {
+                const sidebar = document.getElementById('sidebar');
+                const icon = document.getElementById('toggleIcon');
+                if (sidebar) sidebar.classList.add('collapsed');
+                if (icon) icon.innerText = '➡️';
+            }
+        });
+
         function showNotification(message, type = 'success') {
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;

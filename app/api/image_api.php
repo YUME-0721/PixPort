@@ -107,105 +107,28 @@ function getImages($type, $count, $external = false) {
         ];
     }
     
-    // 外链模式
-    if ($external) {
-        return getExternalImages($type, $count);
-    }
-    
-    // 获取所有图片文件
-    $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif'];
-    $images = [];
-    
-    // 从 images 目录获取图片
-    $imagesBaseDir = dirname(__DIR__, 2) . '/images/' . $type;
-    if (is_dir($imagesBaseDir)) {
-        // 扫描目录下的所有文件
-        $files = scandir($imagesBaseDir);
-        foreach ($files as $file) {
-            if ($file === '.' || $file === '..') continue;
-            
-            $filePath = $imagesBaseDir . '/' . $file;
-            // 如果是文件，直接添加
-            if (is_file($filePath)) {
-                $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-                if (in_array($extension, $allowedExtensions)) {
-                    $images[] = [
-                        'filename' => $file,
-                        'path' => $filePath,
-                        'url' => SITE_URL . '/images/' . $type . '/' . $file,
-                        'extension' => $extension,
-                        'type' => $type,
-                        'size' => filesize($filePath),
-                        'source' => 'images'
-                    ];
-                }
-            } 
-            // 兼容旧的格式子目录结构
-            elseif (is_dir($filePath)) {
-                $subFiles = scandir($filePath);
-                foreach ($subFiles as $subFile) {
-                    if ($subFile === '.' || $subFile === '..') continue;
-                    $subPath = $filePath . '/' . $subFile;
-                    if (is_file($subPath)) {
-                        $extension = strtolower(pathinfo($subFile, PATHINFO_EXTENSION));
-                        if (in_array($extension, $allowedExtensions)) {
-                            $images[] = [
-                                'filename' => $subFile,
-                                'path' => $subPath,
-                                'url' => SITE_URL . '/images/' . $type . '/' . $file . '/' . $subFile,
-                                'extension' => $extension,
-                                'type' => $type,
-                                'size' => filesize($subPath),
-                                'source' => 'images'
-                            ];
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    if (empty($images)) {
-        $message = '没有找到图片，请检查 images 目录';
-        return [
-            'success' => false,
-            'message' => $message,
-            'images' => [],
-            'total_available' => 0
-        ];
-    }
-    
-    // 随机选择图片
-    shuffle($images);
-    $selectedImages = array_slice($images, 0, $count);
-    
-    return [
-        'success' => true,
-        'images' => $selectedImages,
-        'total_available' => count($images)
-    ];
-}
-
-// 外链模式图片获取函数（从数据库读取）
-function getExternalImages($type, $count) {
     try {
         require_once dirname(__DIR__, 2) . '/includes/Database.php';
         $db = Database::getInstance();
         
-        $limit = intval($count * 10);
-        // 查询外链图片
+        $storageType = $external ? 'external' : 'local';
+        $limit = intval($count * 10); // 获取较多数据以供随机洗牌
+
         $sql = "SELECT id, filename, url, device_type, format, width, height, file_size, tags, description, upload_time 
                 FROM images 
-                WHERE storage_type = 'external' AND device_type = :type
+                WHERE storage_type = :storage_type AND device_type = :type
                 ORDER BY RAND()
                 LIMIT {$limit}";
         
-        $result = $db->fetchAll($sql, ['type' => $type]);
+        $result = $db->fetchAll($sql, [
+            'storage_type' => $storageType,
+            'type' => $type
+        ]);
         
         if (empty($result)) {
             return [
                 'success' => false,
-                'message' => '数据库中没有找到外链图片，请先添加外链图片',
+                'message' => '没有找到图片，请检查数据库记录',
                 'images' => [],
                 'total_available' => 0
             ];
@@ -217,7 +140,7 @@ function getExternalImages($type, $count) {
                 'id' => $row['id'],
                 'filename' => $row['filename'],
                 'url' => $row['url'],
-                'extension' => strtolower(pathinfo($row['url'], PATHINFO_EXTENSION)),
+                'extension' => $row['format'],
                 'type' => $row['device_type'],
                 'format' => $row['format'],
                 'width' => $row['width'],
@@ -226,8 +149,8 @@ function getExternalImages($type, $count) {
                 'tags' => $row['tags'],
                 'description' => $row['description'],
                 'upload_time' => $row['upload_time'],
-                'external' => true,
-                'storage_type' => 'external'
+                'external' => ($storageType === 'external'),
+                'storage_type' => $storageType
             ];
         }
         
@@ -242,7 +165,7 @@ function getExternalImages($type, $count) {
         ];
         
     } catch (Exception $e) {
-        error_log('获取外链图片失败: ' . $e->getMessage());
+        error_log('获取图片失败: ' . $e->getMessage());
         return [
             'success' => false,
             'message' => '数据库查询失败: ' . $e->getMessage(),

@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
     libwebp-dev \
     libavif-dev \
     libfreetype6-dev \
+    libzip-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # 配置并安装 GD 扩展（支持 WebP 和 AVIF）和 PDO MySQL 扩展
@@ -23,7 +24,7 @@ RUN docker-php-ext-configure gd \
     --with-jpeg \
     --with-webp \
     --with-avif \
-    && docker-php-ext-install -j$(nproc) gd pdo_mysql
+    && docker-php-ext-install -j$(nproc) gd pdo_mysql zip
 
 # 启用 Apache mod_rewrite
 RUN a2enmod rewrite
@@ -60,15 +61,18 @@ mkdir -p /var/www/html/converted/pe/{jpeg,webp,avif} 2>/dev/null || true\n\
 mkdir -p /var/www/html/images/{pc,pe} 2>/dev/null || true\n\
 mkdir -p /var/www/html/data 2>/dev/null || true\n\
 mkdir -p /var/www/html/app/config 2>/dev/null || true\n\
+mkdir -p /var/www/html/backups 2>/dev/null || true\n\
 # 修复权限\n\
 chmod -R 777 /var/www/html/converted 2>/dev/null || true\n\
 chmod -R 777 /var/www/html/images 2>/dev/null || true\n\
 chmod -R 777 /var/www/html/data 2>/dev/null || true\n\
 chmod -R 777 /var/www/html/app/config 2>/dev/null || true\n\
+chmod -R 777 /var/www/html/backups 2>/dev/null || true\n\
 chown -R www-data:www-data /var/www/html/converted 2>/dev/null || true\n\
 chown -R www-data:www-data /var/www/html/images 2>/dev/null || true\n\
 chown -R www-data:www-data /var/www/html/data 2>/dev/null || true\n\
 chown -R www-data:www-data /var/www/html/app/config 2>/dev/null || true\n\
+chown -R www-data:www-data /var/www/html/backups 2>/dev/null || true\n\
 echo "✅ 目录初始化完成"\n\
 exec apache2-foreground' > /start.sh \
 	&& chmod +x /start.sh

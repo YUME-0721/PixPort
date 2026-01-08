@@ -8,6 +8,7 @@ USE DB_NAME_PLACEHOLDER;
 CREATE TABLE IF NOT EXISTS images (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY COMMENT '图片ID',
     filename VARCHAR(255) NOT NULL COMMENT '文件名',
+    original_name VARCHAR(255) DEFAULT NULL COMMENT '原始文件名',
     url VARCHAR(500) NOT NULL COMMENT '访问URL',
     storage_type ENUM('local', 'external') NOT NULL DEFAULT 'local' COMMENT '存储类型：本地/外链',
     device_type ENUM('pc', 'pe') NOT NULL COMMENT '设备类型：PC端/移动端',

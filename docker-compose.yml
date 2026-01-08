@@ -40,6 +40,7 @@ services:
       - ./data:/var/www/html/data:rw
     environment:
       - TZ=Asia/Shanghai
+      - ADMIN_USER=${ADMIN_USER:-admin}        # 修改为你的访问账号
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}  # 修改为你的访问密码
       # 数据库连接配置
       - DB_HOST=mysql

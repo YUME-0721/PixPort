@@ -74,9 +74,7 @@ PixPort/
 │   │   ├── index.php              # 首页
 │   │   ├── upload.php             # 图片上传
 │   │   ├── api-panel.php          # API 控制面板
-│   │   ├── file.php               # 图片文件管理
 │   │   ├── gallery.php            # 图片画廊
-│   │   ├── external-manager.php   # 外链管理
 │   │   └── panel.php              # 系统监控面板
 │   └── config/                    # API 配置 (自动生成)
 ├── database/
@@ -194,9 +192,7 @@ fetch('/image_api.php?count=5')
 |------|------|------|
 | 首页 | `/index.php` | 登录页面 |
 | 图片上传 | `/upload.php` | 上传本地图片 |
-| 图片管理 | `/file.php` | 本地图片管理 |
 | 图片画廊 | `/gallery.php` | 图片预览和管理 |
-| 外链管理 | `/external-manager.php` | 外链图片管理 |
 | 系统监控 | `/panel.php` | 系统状态和数据库信息 |
 | API 控制 | `/api-panel.php` | API 参数配置和文档 |
 

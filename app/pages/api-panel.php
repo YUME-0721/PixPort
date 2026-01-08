@@ -19,6 +19,19 @@ if (!is_dir(dirname($apiConfigFile))) {
     mkdir(dirname($apiConfigFile), 0755, true);
 }
 
+// 加载系统配置
+$systemConfigFile = dirname(__DIR__, 2) . '/config/system-config.json';
+$systemConfig = [
+    'background_url' => '/public/assets/images/home-backend.jpg'
+];
+if (file_exists($systemConfigFile)) {
+    $loadedConfig = json_decode(file_get_contents($systemConfigFile), true);
+    if (is_array($loadedConfig)) {
+        $systemConfig = array_merge($systemConfig, $loadedConfig);
+    }
+}
+$currentBg = $systemConfig['background_url'];
+
 // 默认 API 配置
 $defaultConfig = [
     'api_enabled' => true,
@@ -84,7 +97,7 @@ $apiStatus = $config['api_enabled'] ? '✅ 已启用' : '❌ 已禁用';
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-            background: url('/public/assets/images/home-backend.jpg') no-repeat center center fixed;
+            background: url('<?php echo $currentBg; ?>') no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
             padding: 20px;
@@ -177,6 +190,111 @@ $apiStatus = $config['api_enabled'] ? '✅ 已启用' : '❌ 已禁用';
         }
         .tab-btn:hover:not(.active) {
             background: rgba(255, 255, 255, 0.3);
+        }
+        /* 侧边栏样式 */
+        .sidebar {
+            position: fixed;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 16px;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            z-index: 1000;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 200px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        .sidebar.collapsed {
+            width: 66px;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            white-space: nowrap;
+            width: 100%;
+            justify-content: flex-start;
+            font-size: 15px;
+            text-decoration: none;
+        }
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+        .sidebar.collapsed .nav-item {
+            padding: 12px;
+            justify-content: center;
+        }
+        .sidebar.collapsed .btn-text {
+            display: none;
+        }
+        .toggle-btn {
+            margin-top: 5px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 15px;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            color: white;
+            display: flex;
+            width: 100%;
+        }
+        
+        /* 悬浮退出按钮 */
+        .floating-logout {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 54px;
+            height: 54px;
+            background: rgba(220, 53, 69, 0.2);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            z-index: 9999;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .floating-logout:hover {
+            background: rgba(220, 53, 69, 0.5);
+            transform: scale(1.1) rotate(-10deg);
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 12px 40px rgba(220, 53, 69, 0.4);
+        }
+        .floating-logout svg {
+            width: 26px;
+            height: 26px;
         }
         .container {
             max-width: 1200px;
@@ -314,22 +432,35 @@ $apiStatus = $config['api_enabled'] ? '✅ 已启用' : '❌ 已禁用';
         <a href="/upload.php" style="text-decoration: none;">
             <h1 style="cursor: pointer;">
                 <img src="/public/assets/images/logo-white.png" alt="PixPort" class="logo-img">
-                <span>- 后台管理</span>
+                <span>- API管理</span>
             </h1>
         </a>
-        <div style="display: flex; gap: 10px;">
-            <a href="/upload.php" style="padding: 10px 20px; background: #667eea; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.background='#5568d3'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='#667eea'; this.style.transform='translateY(0)'">🏠 返回主页</a>
-            <a href="?logout=1" class="logout-btn">🚪 退出登录</a>
-        </div>
     </div>
 
-    <div class="tabs">
-        <a href="/panel.php?tab=system" class="tab-btn">📊 系统监控</a>
-        <a href="/panel.php?tab=database" class="tab-btn">🗄️ 数据库监控</a>
-        <a href="/file.php" class="tab-btn">🖼️ 图片管理</a>
-        <a href="/gallery.php" class="tab-btn">🎨 图片画廊</a>
-        <a href="/external-manager.php" class="tab-btn">🔗 外链管理</a>
-        <a href="/api-panel.php" class="tab-btn active">🔧 API管理</a>
+    <div class="sidebar" id="sidebar">
+        <a href="/upload.php" class="nav-item">
+            <span class="btn-icon">📤</span>
+            <span class="btn-text">上传图片</span>
+        </a>
+        <a href="/gallery.php" class="nav-item">
+            <span class="btn-icon">🎨</span>
+            <span class="btn-text">图片画廊</span>
+        </a>
+        <a href="/panel.php" class="nav-item">
+            <span class="btn-icon">📊</span>
+            <span class="btn-text">监控面板</span>
+        </a>
+        <div class="nav-item active">
+            <span class="btn-icon">🔧</span>
+            <span class="btn-text">API管理</span>
+        </div>
+        <a href="/system-panel.php" class="nav-item">
+            <span class="btn-icon">⚙️</span>
+            <span class="btn-text">系统设置</span>
+        </a>
+        <div class="toggle-btn" onclick="toggleSidebar()">
+            <span id="toggleIcon">⬅️</span>
+        </div>
     </div>
 
     <div class="container">
@@ -338,35 +469,9 @@ $apiStatus = $config['api_enabled'] ? '✅ 已启用' : '❌ 已禁用';
             <div class="alert"><?php echo $message; ?></div>
         <?php endif; ?>
 
-        <!-- API 状态面板 -->
-        <section>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="margin: 0; flex: 1; border: none;">🔧 API 状态面板</h2>
-                <div style="font-size: 28px; font-weight: bold;"><?php echo $apiStatus; ?></div>
-            </div>
-            <div class="grid">
-                <div class="stat-card">
-                    <div class="stat-label">API 版本</div>
-                    <div class="stat-value">2.0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">最大请求数</div>
-                    <div class="stat-value"><?php echo $config['max_images_per_request']; ?></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">缓存状态</div>
-                    <div class="stat-value"><?php echo $config['cache_enabled'] ? '✅ 启用' : '❌ 禁用'; ?></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">速率限制</div>
-                    <div class="stat-value"><?php echo $config['rate_limit_enabled'] ? '✅ 启用' : '❌ 禁用'; ?></div>
-                </div>
-            </div>
-        </section>
-
         <!-- API 配置表单 -->
         <section>
-            <h2>⚙️ API 配置</h2>
+            <h2>⚙️ 随机图API 配置</h2>
             <form method="POST" style="background: rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);">
                 <input type="hidden" name="action" value="update_config">
                 
@@ -469,165 +574,37 @@ $apiStatus = $config['api_enabled'] ? '✅ 已启用' : '❌ 已禁用';
             </form>
         </section>
 
-        <!-- 请求参数说明 -->
-        <section>
-            <h2>📝 请求参数说明</h2>
-            <div class="grid">
-                <!-- count -->
-                <div class="grid-item" style="border-left: 4px solid #667eea;">
-                    <h4 style="color: #667eea;">count - 返回图片数量</h4>
-                    <div style="color: rgba(255, 255, 255, 0.8); margin-bottom: 10px;">
-                        <strong>类型:</strong> 整数 | <strong>范围:</strong> 1-<?php echo $config['max_images_per_request']; ?> | <strong>默认:</strong> <?php echo $config['default_image_count']; ?>
-                    </div>
-                    <div style="color: rgba(255, 255, 255, 0.7); margin-bottom: 10px;">
-                        <strong>示例:</strong> <code style="background: rgba(0, 0, 0, 0.3); padding: 2px 4px; border-radius: 3px;">/image_api.php?count=5</code>
-                    </div>
-                    <div style="color: rgba(255, 255, 255, 0.6); margin-bottom: 5px;">指定一次请求返回多少张随机图片</div>
-                </div>
-
-                <!-- type -->
-                <div class="grid-item" style="border-left: 4px solid #28a745;">
-                    <h4 style="color: #28a745;">type - 设备类型</h4>
-                    <div style="color: rgba(255, 255, 255, 0.8); margin-bottom: 10px;">
-                        <strong>类型:</strong> 字符串 | <strong>可选值:</strong> pc / pe / auto
-                    </div>
-                    <div style="color: rgba(255, 255, 255, 0.7); margin-bottom: 10px;">
-                        <strong>示例:</strong> <code style="background: rgba(0, 0, 0, 0.3); padding: 2px 4px; border-radius: 3px;">/image_api.php?type=pc</code>
-                    </div>
-                    <div style="color: rgba(255, 255, 255, 0.6); margin-bottom: 5px;">
-                        • <strong>pc</strong>: 桌面端图片<br>
-                        • <strong>pe</strong>: 移动端图片<br>
-                        • <strong>auto</strong>: 自动检测 (默认)
-                    </div>
-                </div>
-
-                <!-- format -->
-                <div class="grid-item" style="border-left: 4px solid #ffc107;">
-                    <h4 style="color: #ffc107;">format - 响应格式</h4>
-                    <div style="color: rgba(255, 255, 255, 0.8); margin-bottom: 10px;">
-                        <strong>类型:</strong> 字符串 | <strong>可选值:</strong> json / text / url | <strong>默认:</strong> json
-                    </div>
-                    <div style="color: rgba(255, 255, 255, 0.7); margin-bottom: 10px;">
-                        <strong>示例:</strong> <code style="background: rgba(0, 0, 0, 0.3); padding: 2px 4px; border-radius: 3px;">/image_api.php?format=text</code>
-                    </div>
-                    <div style="color: rgba(255, 255, 255, 0.6); margin-bottom: 5px;">
-                        • <strong>json</strong>: 返回完整 JSON 对象<br>
-                        • <strong>text</strong>: 每行一个 URL<br>
-                        • <strong>url</strong>: 同 text
-                    </div>
-                </div>
-
-                <!-- return -->
-                <div class="grid-item" style="border-left: 4px solid #dc3545;">
-                    <h4 style="color: #dc3545;">return - 返回类型</h4>
-                    <div style="color: rgba(255, 255, 255, 0.8); margin-bottom: 10px;">
-                        <strong>类型:</strong> 字符串 | <strong>可选值:</strong> json / redirect | <strong>默认:</strong> json
-                    </div>
-                    <div style="color: rgba(255, 255, 255, 0.7); margin-bottom: 10px;">
-                        <strong>示例:</strong> <code style="background: rgba(0, 0, 0, 0.3); padding: 2px 4px; border-radius: 3px;">/image_api.php?return=redirect</code>
-                    </div>
-                    <div style="color: rgba(255, 255, 255, 0.6); margin-bottom: 5px;">
-                        • <strong>json</strong>: 返回 JSON 数据<br>
-                        • <strong>redirect</strong>: 直接重定向到图片 (需 count=1)
-                    </div>
-                </div>
-
-                <!-- external -->
-                <div class="grid-item" style="border-left: 4px solid #17a2b8;">
-                    <h4 style="color: #17a2b8;">external - 外链模式</h4>
-                    <div style="color: rgba(255, 255, 255, 0.8); margin-bottom: 10px;">
-                        <strong>类型:</strong> 布尔值 | <strong>可选值:</strong> true / false / 1 / 0 | <strong>默认:</strong> false
-                    </div>
-                    <div style="color: rgba(255, 255, 255, 0.7); margin-bottom: 10px;">
-                        <strong>示例:</strong> <code style="background: rgba(0, 0, 0, 0.3); padding: 2px 4px; border-radius: 3px;">/image_api.php?external=true</code>
-                    </div>
-                    <div style="color: rgba(255, 255, 255, 0.6); margin-bottom: 5px;">
-                        启用时从数据库中获取外链图片 (需启用外链模式功能)
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 使用示例 -->
-        <section>
-            <h2>💡 使用示例</h2>
-            <div class="grid">
-                <div class="grid-item">
-                    <h4>基础调用</h4>
-                    <div class="code-block"># 获取 1 张自动格式的图片
-GET /image_api.php
-
-# 获取 5 张桌面端图片
-GET /image_api.php?count=5&type=pc
-
-# 获取 3 张移动端图片，文本格式
-GET /image_api.php?count=3&type=pe&format=text</div>
-                </div>
-
-                <div class="grid-item">
-                    <h4>JavaScript 调用</h4>
-                    <div class="code-block">// 获取随机图片
-fetch('/image_api.php?count=5')
-  .then(r => r.json())
-  .then(data => {
-    if (data.success) {
-      data.images.forEach(img => {
-        console.log(img.url);
-      });
-    }
-  });
-
-// 直接显示图片
-const img = new Image();
-img.src = '/image_api.php?return=redirect';
-document.body.appendChild(img);</div>
-                </div>
-
-                <div class="grid-item">
-                    <h4>HTML 直接使用</h4>
-                    <div class="code-block">&lt;!-- 直接显示图片 --&gt;
-&lt;img src="/image_api.php?return=redirect" alt="Random"&gt;
-
-&lt;!-- 背景图片 --&gt;
-&lt;div style="background-image: url('/image_api.php?return=redirect&type=pc')"&gt;
-&lt;/div&gt;
-
-&lt;!-- 外链模式 --&gt;
-&lt;img src="/image_api.php?external=true&return=redirect"&gt;</div>
-                </div>
-
-                <div class="grid-item">
-                    <h4>外链模式</h4>
-                    <div class="code-block"># 启用外链模式
-GET /image_api.php?external=true
-
-# 外链模式获取 5 张移动端图片
-GET /image_api.php?external=true&type=pe&count=5
-
-# 外链模式直接重定向
-GET /image_api.php?external=1&return=redirect</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 快速测试 -->
-        <section>
-            <h2>🚀 快速测试</h2>
-            <div class="grid">
-                <a href="/image_api.php" target="_blank" style="display: flex; align-items: center; justify-content: center; padding: 30px; background: rgba(102, 126, 234, 0.2); border: 1px solid rgba(102, 126, 234, 0.5); border-radius: 8px; color: #667eea; text-decoration: none; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.background='rgba(102, 126, 234, 0.3)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='rgba(102, 126, 234, 0.2)'; this.style.transform='translateY(0)'">
-                    📊 获取 1 张 (JSON)
-                </a>
-                <a href="/image_api.php?count=5&format=text" target="_blank" style="display: flex; align-items: center; justify-content: center; padding: 30px; background: rgba(40, 167, 69, 0.2); border: 1px solid rgba(40, 167, 69, 0.5); border-radius: 8px; color: #28a745; text-decoration: none; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.background='rgba(40, 167, 69, 0.3)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='rgba(40, 167, 69, 0.2)'; this.style.transform='translateY(0)'">
-                    📝 获取 5 张 (文本)
-                </a>
-                <a href="/image_api.php?return=redirect" target="_blank" style="display: flex; align-items: center; justify-content: center; padding: 30px; background: rgba(255, 193, 7, 0.2); border: 1px solid rgba(255, 193, 7, 0.5); border-radius: 8px; color: #ffc107; text-decoration: none; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.background='rgba(255, 193, 7, 0.3)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='rgba(255, 193, 7, 0.2)'; this.style.transform='translateY(0)'">
-                    🖼️ 直接显示图片
-                </a>
-                <a href="/image_api.php?external=true&count=3" target="_blank" style="display: flex; align-items: center; justify-content: center; padding: 30px; background: rgba(23, 162, 184, 0.2); border: 1px solid rgba(23, 162, 184, 0.5); border-radius: 8px; color: #17a2b8; text-decoration: none; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.background='rgba(23, 162, 184, 0.3)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='rgba(23, 162, 184, 0.2)'; this.style.transform='translateY(0)'">
-                    🔗 外链模式 (3 张)
-                </a>
-            </div>
-        </section>
     </div>
+
+    <a href="?logout=1" class="floating-logout" title="退出登录">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 4.001H5v14a2 2 0 0 0 2 2h8m1-5l3-3m0 0l-3-3m3 3H9"/></svg>
+    </a>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('toggleIcon');
+            sidebar.classList.toggle('collapsed');
+            
+            if (sidebar.classList.contains('collapsed')) {
+                icon.innerText = '➡️';
+                localStorage.setItem('sidebarCollapsed', 'true');
+            } else {
+                icon.innerText = '⬅️';
+                localStorage.setItem('sidebarCollapsed', 'false');
+            }
+        }
+
+        // 页面加载时恢复侧边栏状态
+        window.addEventListener('DOMContentLoaded', () => {
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (isCollapsed) {
+                const sidebar = document.getElementById('sidebar');
+                const icon = document.getElementById('toggleIcon');
+                if (sidebar) sidebar.classList.add('collapsed');
+                if (icon) icon.innerText = '➡️';
+            }
+        });
+    </script>
 </body>
 </html>
