@@ -1,31 +1,6 @@
 services:
-  # MySQL 数据库服务
-  mysql:
-    image: mysql:8.0
-    container_name: pixport-mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-pixport123} # MySQL root 超级管理员的密码
-      MYSQL_DATABASE: ${DB_NAME:-pixport} #容器启动时自动创建的数据库名称
-      MYSQL_USER: ${DB_USER:-pixport} #容器启动时自动创建的普通用户名
-      MYSQL_PASSWORD: ${DB_PASSWORD:-pixport123} #上面普通用户的密码
-      TZ: Asia/Shanghai
-    ports:
-      - "13308:3306"  # 映射到主机端口 13308
-    volumes:
-      - ./mysql-data:/var/lib/mysql:rw
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-    command: --default-authentication-plugin=mysql_native_password
-    restart: unless-stopped
-    networks:
-      - picflow-network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # PicFlow-API PHP 服务
-  prisma-api:
+  # PixPort PHP 服务（使用 SQLite 轻量级数据库）
+  pixport-app:
     build: .
     image: pixport:latest
     container_name: pixport
@@ -36,25 +11,20 @@ services:
       - ./converted:/var/www/html/converted:rw
       # 挂载原始图片目录
       - ./images:/var/www/html/images:rw
-      # 挂载相册数据（迁移后可删除）
+      # 挂载相册数据
       - ./data:/var/www/html/data:rw
+      # 挂载 SQLite 数据库（持久化）
+      - ./database:/var/www/html/database:rw
+      # 挂载配置文件
+      - ./config:/var/www/html/config:rw
     environment:
       - TZ=Asia/Shanghai
       - ADMIN_USER=${ADMIN_USER:-admin}        # 修改为你的访问账号
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}  # 修改为你的访问密码
-      # 数据库连接配置
-      - DB_HOST=mysql
-      - DB_PORT=3306
-      - DB_NAME=${DB_NAME:-pixport}
-      - DB_USER=${DB_USER:-pixport}
-      - DB_PASSWORD=${DB_PASSWORD:-pixport123}
-    depends_on:
-      mysql:
-        condition: service_healthy
     restart: unless-stopped
     networks:
-      - picflow-network
+      - pixport-network
 
 networks:
-  picflow-network:
+  pixport-network:
     driver: bridge

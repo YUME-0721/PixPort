@@ -57,60 +57,49 @@ function formatBytes($size) {
 function getDatabaseInfo() {
     $dbInfo = [
         'status' => '❌ 未连接',
-        'host' => getenv('DB_HOST') ?: 'mysql',
-        'port' => getenv('DB_PORT') ?: '3306',
-        'database' => getenv('DB_NAME') ?: 'picflow',
-        'user' => getenv('DB_USER') ?: 'root',
+        'type' => 'Unknown',
+        'path' => 'Unknown',
         'version' => 'Unknown',
-        'charset' => 'Unknown',
-        'datadir' => 'Unknown',
-        'max_connections' => 'Unknown',
-        'threads_connected' => 'Unknown',
-        'questions' => 'Unknown',
-        'uptime' => 'Unknown',
         'error' => null
     ];
     
     try {
         $db = Database::getInstance();
         $pdo = $db->getConnection();
+        $dbType = $db->getDatabaseType();
         
-        // 获取MySQL版本
-        $versionResult = $pdo->query('SELECT VERSION() as version')->fetch();
-        $dbInfo['version'] = $versionResult['version'] ?? 'Unknown';
+        $dbInfo['type'] = strtoupper($dbType);
         
-        // 获取系统变量
-        $varsResult = $pdo->query('SHOW VARIABLES LIKE "character_set_database"')->fetch();
-        $dbInfo['charset'] = $varsResult['Value'] ?? 'Unknown';
-        
-        // 获取数据目录
-        $datadirResult = $pdo->query('SHOW VARIABLES LIKE "datadir"')->fetch();
-        $dbInfo['datadir'] = $datadirResult['Value'] ?? 'Unknown';
-        
-        // 获取最大连接数
-        $maxConnResult = $pdo->query('SHOW VARIABLES LIKE "max_connections"')->fetch();
-        $dbInfo['max_connections'] = $maxConnResult['Value'] ?? 'Unknown';
-        
-        // 获取运行状态信息
-        $statusResult = $pdo->query('SHOW STATUS WHERE Variable_name IN ("Threads_connected", "Questions", "Uptime")')->fetchAll();
-        foreach ($statusResult as $row) {
-            if ($row['Variable_name'] === 'Threads_connected') {
-                $dbInfo['threads_connected'] = $row['Value'];
-            } elseif ($row['Variable_name'] === 'Questions') {
-                $dbInfo['questions'] = $row['Value'];
-            } elseif ($row['Variable_name'] === 'Uptime') {
-                $dbInfo['uptime'] = formatUptime($row['Value']);
+        if ($dbType === 'sqlite') {
+            // SQLite 信息
+            $versionResult = $pdo->query('SELECT sqlite_version() as version')->fetch();
+            $dbInfo['version'] = 'SQLite ' . ($versionResult['version'] ?? 'Unknown');
+            $dbInfo['path'] = dirname(__DIR__, 2) . '/database/pixport.db';
+            
+            // 获取数据库大小
+            $dbPath = dirname(__DIR__, 2) . '/database/pixport.db';
+            if (file_exists($dbPath)) {
+                $dbInfo['database_size'] = round(filesize($dbPath) / 1024 / 1024, 2) . ' MB';
             }
+        } else {
+            // MySQL 信息（兼容模式）
+            $dbInfo['host'] = getenv('DB_HOST') ?: 'mysql';
+            $dbInfo['port'] = getenv('DB_PORT') ?: '3306';
+            $dbInfo['database'] = getenv('DB_NAME') ?: 'pixport';
+            $dbInfo['user'] = getenv('DB_USER') ?: 'root';
+            
+            $versionResult = $pdo->query('SELECT VERSION() as version')->fetch();
+            $dbInfo['version'] = $versionResult['version'] ?? 'Unknown';
+            
+            // 获取数据库大小
+            $sizeResult = $db->fetchOne(
+                "SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) as size_mb 
+                 FROM information_schema.tables 
+                 WHERE table_schema = :db_name",
+                ['db_name' => getenv('DB_NAME') ?: 'pixport']
+            );
+            $dbInfo['database_size'] = ($sizeResult['size_mb'] ?? 0) . ' MB';
         }
-        
-        // 获取数据库大小
-        $sizeResult = $db->fetchOne(
-            "SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) as size_mb 
-             FROM information_schema.tables 
-             WHERE table_schema = :db_name",
-            ['db_name' => getenv('DB_NAME') ?: 'picflow']
-        );
-        $dbInfo['database_size'] = ($sizeResult['size_mb'] ?? 0) . ' MB';
         
         $dbInfo['status'] = '✅ 已连接';
     } catch (Exception $e) {
@@ -731,63 +720,45 @@ $externalStats = getExternalImageStats();
         <?php endif; ?>
         
         <div class="info-item">
+            <span class="label">数据库类型</span>
+            <span class="value"><?php echo $dbInfo['type']; ?></span>
+        </div>
+        
+        <?php if ($dbInfo['type'] === 'SQLITE'): ?>
+        <div class="info-item">
+            <span class="label">数据库路径</span>
+            <span class="value" style="font-size: 12px; word-break: break-all;"><?php echo $dbInfo['path']; ?></span>
+        </div>
+        <?php else: ?>
+        <div class="info-item">
             <span class="label">主机地址</span>
-            <span class="value"><?php echo $dbInfo['host']; ?></span>
+            <span class="value"><?php echo $dbInfo['host'] ?? 'N/A'; ?></span>
         </div>
         
         <div class="info-item">
             <span class="label">端口号</span>
-            <span class="value"><?php echo $dbInfo['port']; ?></span>
+            <span class="value"><?php echo $dbInfo['port'] ?? 'N/A'; ?></span>
         </div>
         
         <div class="info-item">
             <span class="label">数据库名</span>
-            <span class="value"><?php echo $dbInfo['database']; ?></span>
+            <span class="value"><?php echo $dbInfo['database'] ?? 'N/A'; ?></span>
         </div>
         
         <div class="info-item">
             <span class="label">用户名</span>
-            <span class="value"><?php echo $dbInfo['user']; ?></span>
+            <span class="value"><?php echo $dbInfo['user'] ?? 'N/A'; ?></span>
         </div>
+        <?php endif; ?>
         
         <div class="info-item">
-            <span class="label">MySQL 版本</span>
+            <span class="label">数据库版本</span>
             <span class="value"><?php echo $dbInfo['version']; ?></span>
         </div>
         
         <div class="info-item">
-            <span class="label">字符集</span>
-            <span class="value"><?php echo $dbInfo['charset']; ?></span>
-        </div>
-        
-        <div class="info-item">
-            <span class="label">数据目录</span>
-            <span class="value" style="font-size: 12px; word-break: break-all;"><?php echo $dbInfo['datadir']; ?></span>
-        </div>
-        
-        <div class="info-item">
             <span class="label">数据库大小</span>
-            <span class="value"><?php echo $dbInfo['database_size']; ?></span>
-        </div>
-        
-        <div class="info-item">
-            <span class="label">最大连接数</span>
-            <span class="value"><?php echo $dbInfo['max_connections']; ?></span>
-        </div>
-        
-        <div class="info-item">
-            <span class="label">当前连接</span>
-            <span class="value"><?php echo $dbInfo['threads_connected']; ?></span>
-        </div>
-        
-        <div class="info-item">
-            <span class="label">查询总数</span>
-            <span class="value"><?php echo $dbInfo['questions']; ?></span>
-        </div>
-        
-        <div class="info-item">
-            <span class="label">运行时长</span>
-            <span class="value"><?php echo $dbInfo['uptime']; ?></span>
+            <span class="value"><?php echo $dbInfo['database_size'] ?? '0 MB'; ?></span>
         </div>
     </div>
 

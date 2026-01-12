@@ -12,6 +12,7 @@
 - 📱 **设备自适应** - 自动检测设备类型返回对应尺寸
 - 🎯 **随机图 API** - 获取随机图片，支持多种参数配置
 - 🐳 **Docker 部署** - 一键构建和部署
+- ⚡ **SQLite 轻量化** - 默认使用 SQLite，内存占用 < 3MB，对比 MySQL 8.0 的 450MB+
 
 ## 🚀 快速开始
 
@@ -59,9 +60,7 @@ docker compose down
 
 | 服务 | 地址 | 用户名 | 密码 |
 |------|------|--------|------|
-| Web 应用 | `http://localhost:27668` | - | `admin123` |
-| MySQL | `localhost:13308` | `pixport` | `pixport123` |
-| MySQL root | - | `root` | `pixport123` |
+| Web 应用 | `http://localhost:27668` | admin | `admin123` |
 
 ## 📁 项目结构
 
@@ -78,7 +77,8 @@ PixPort/
 │   │   └── panel.php              # 系统监控面板
 │   └── config/                    # API 配置 (自动生成)
 ├── database/
-│   └── init.sql                   # 数据库初始化脚本
+│   ├── init_sqlite.sql            # SQLite 初始化脚本
+│   └── pixport.db                 # SQLite 数据库文件 (自动创建)
 ├── includes/
 │   └── Database.php               # 数据库连接类
 ├── public/
@@ -89,6 +89,7 @@ PixPort/
 │   └── pe/                        # 移动端图片
 ├── converted/                     # 格式转换后的图片
 ├── data/                          # 相册数据存储
+├── config/                        # 系统配置文件
 ├── Dockerfile                     # Docker 配置
 ├── docker-compose.yml             # Docker Compose 配置
 ├── .env                           # 环境变量 (自动生成)
@@ -103,16 +104,33 @@ PixPort/
 首次启动时 `build.sh` 会自动生成 `.env` 文件，可根据需要修改：
 
 ```env
-# 管理后台密码
+# 管理后台账户
+ ADMIN_USER=admin
 ADMIN_PASSWORD=admin123
+```
 
-# MySQL 数据库配置
-DB_HOST=mysql
+### 数据库配置
+
+项目默认使用 **SQLite** 轻量级数据库，无需额外配置：
+
+- **内存占用**: < 3MB（MySQL 8.0 需要 450MB+）
+- **数据库文件**: `database/pixport.db`
+- **自动创建**: 首次访问时自动初始化
+
+#### （可选）使用 MySQL
+
+如果需要使用 MySQL，需自行配置 MySQL 服务并在 `.env` 中添加：
+
+```env
+USE_MYSQL=true
+DB_HOST=your_mysql_host
+DB_PORT=3306
 DB_NAME=pixport
 DB_USER=pixport
-DB_PASSWORD=pixport123
-DB_ROOT_PASSWORD=pixport123
+DB_PASSWORD=your_password
 ```
+
+然后手动创建数据库表结构（参考 `init_sqlite.sql` 转换为 MySQL 语法）。
 
 ### API 配置 (app/config/api-config.json)
 
@@ -198,24 +216,48 @@ fetch('/image_api.php?count=5')
 
 ## 🗄️ 数据库设计
 
+项目默认使用 **SQLite** 轻量级数据库，也兼容 MySQL。
+
 ### images 表
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| `id` | INT | 主键 |
-| `filename` | VARCHAR(255) | 文件名 |
-| `url` | VARCHAR(500) | 访问 URL |
-| `storage_type` | ENUM | 存储类型: `local`/`external` |
-| `device_type` | ENUM | 设备类型: `pc`/`pe` |
-| `format` | ENUM | 图片格式: `jpeg`/`webp`/`avif` |
-| `local_path` | VARCHAR(500) | 本地路径 |
-| `width` | INT | 图片宽度 |
-| `height` | INT | 图片高度 |
-| `file_size` | BIGINT | 文件大小 |
-| `tags` | VARCHAR(255) | 标签 |
+| `id` | INTEGER | 主键 |
+| `filename` | TEXT | 文件名 |
+| `url` | TEXT | 访问 URL |
+| `storage_type` | TEXT | 存储类型: `local`/`external` |
+| `device_type` | TEXT | 设备类型: `pc`/`pe` |
+| `format` | TEXT | 图片格式: `jpeg`/`webp`/`avif` |
+| `local_path` | TEXT | 本地路径 |
+| `width` | INTEGER | 图片宽度 |
+| `height` | INTEGER | 图片高度 |
+| `file_size` | INTEGER | 文件大小 |
+| `tags` | TEXT | 标签 |
 | `description` | TEXT | 描述 |
-| `uploader_ip` | VARCHAR(45) | 上传者 IP |
+| `uploader_ip` | TEXT | 上传者 IP |
 | `upload_time` | DATETIME | 上传时间 |
+
+### albums 表
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `id` | INTEGER | 主键 |
+| `album_id` | TEXT | 相册唯一标识 |
+| `name` | TEXT | 相册名称 |
+| `description` | TEXT | 相册描述 |
+| `cover_image_id` | INTEGER | 封面图片ID |
+| `created_at` | DATETIME | 创建时间 |
+| `updated_at` | DATETIME | 更新时间 |
+
+### album_images 表
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `id` | INTEGER | 主键 |
+| `album_id` | INTEGER | 相册ID |
+| `image_id` | INTEGER | 图片ID |
+| `sort_order` | INTEGER | 排序顺序 |
+| `added_at` | DATETIME | 添加时间 |
 
 ## 📚 管理功能
 
@@ -241,13 +283,15 @@ fetch('/image_api.php?count=5')
 | 容器端口 | 主机端口 | 服务 |
 |---------|---------|------|
 | 80 | 27668 | PHP/Apache |
-| 3306 | 13308 | MySQL |
 
 ### 数据卷
 
 ```bash
-# MySQL 数据持久化
-./mysql-data:/var/lib/mysql
+# SQLite 数据库持久化
+./database:/var/www/html/database
+
+# 配置文件持久化
+./config:/var/www/html/config
 
 # 本地图片存储
 ./images:/var/www/html/images
@@ -266,19 +310,16 @@ fetch('/image_api.php?count=5')
 ```bash
 # PHP/Apache 日志
 docker logs -f pixport
-
-# MySQL 日志
-docker logs -f pixport-mysql
 ```
 
 ### 数据备份
 
 ```bash
-# 备份数据库
-docker exec pixport-mysql mysqldump -u pixport -ppixport123 pixport > backup.sql
+# 备份 SQLite 数据库
+cp database/pixport.db database/pixport.db.backup
 
 # 恢复数据库
-docker exec -i pixport-mysql mysql -u pixport -ppixport123 pixport < backup.sql
+cp database/pixport.db.backup database/pixport.db
 ```
 
 ### 重置系统
@@ -304,9 +345,9 @@ docker volume prune
 
 ### 数据库连接失败
 
-- 确认 MySQL 容器已启动: `docker ps | grep mysql`
-- 检查 `.env` 文件中的数据库配置
-- 查看 MySQL 日志: `docker logs pixport-mysql`
+- SQLite 数据库会自动创建，无需额外配置
+- 检查 `database/` 目录权限：`ls -la database/`
+- 如使用 MySQL，确认环境变量 `USE_MYSQL=true`
 
 ### 上传文件失败
 
@@ -337,7 +378,6 @@ docker logs pixport        # 查看 PHP 日志
 
 # 进入容器
 docker exec -it pixport bash          # 进入 PHP 容器
-docker exec -it pixport-mysql bash    # 进入 MySQL 容器
 
 # 清理资源
 docker compose down --remove-orphans  # 删除孤立的容器
@@ -350,5 +390,6 @@ docker volume prune                   # 删除未使用的数据卷
 
 ---
 
-**最后更新:** 2026-01-07  
+**最后更新:** 2026-01-11  
+**版本:** v2.0 (SQLite 轻量化版本)  
 **维护者:** YUME

@@ -1,16 +1,68 @@
 <?php
 /**
  * 数据库连接类
- * 使用 PDO 封装 MySQL 连接
+ * 自动检测并连接 SQLite（轻量级）或 MySQL（传统方案）
  */
 class Database {
     private static $instance = null;
     private $pdo;
+    private $dbType = 'sqlite'; // 默认使用 SQLite
     
     private function __construct() {
+        // 优先使用 SQLite（轻量化方案）
+        $sqliteDb = dirname(__DIR__) . '/database/pixport.db';
+        $sqliteDir = dirname($sqliteDb);
+        
+        // 如果显式配置了 MySQL 且可连接，则使用 MySQL
+        $useMysql = getenv('USE_MYSQL') === 'true';
+        
+        if ($useMysql && $this->testMysqlConnection()) {
+            $this->initMysql();
+        } else {
+            $this->initSqlite($sqliteDb, $sqliteDir);
+        }
+    }
+    
+    /**
+     * 初始化 SQLite 数据库
+     */
+    private function initSqlite($dbPath, $dbDir) {
+        try {
+            // 确保数据库目录存在
+            if (!is_dir($dbDir)) {
+                mkdir($dbDir, 0755, true);
+            }
+            
+            $isNewDb = !file_exists($dbPath);
+            
+            $this->pdo = new PDO("sqlite:{$dbPath}", null, null, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false
+            ]);
+            
+            // 启用外键约束
+            $this->pdo->exec('PRAGMA foreign_keys = ON');
+            
+            // 如果是新数据库，执行初始化脚本
+            if ($isNewDb) {
+                $this->initializeSqliteSchema();
+            }
+            
+            $this->dbType = 'sqlite';
+        } catch (PDOException $e) {
+            error_log("SQLite 连接失败: " . $e->getMessage());
+            throw new Exception("数据库连接失败");
+        }
+    }
+    
+    /**
+     * 初始化 MySQL 数据库（传统方案）
+     */
+    private function initMysql() {
         $host = getenv('DB_HOST') ?: 'mysql';
         $port = getenv('DB_PORT') ?: '3306';
-        $dbname = getenv('DB_NAME') ?: 'picflow';
+        $dbname = getenv('DB_NAME') ?: 'pixport';
         $username = getenv('DB_USER') ?: 'root';
         $password = getenv('DB_PASSWORD') ?: 'root';
         
@@ -23,10 +75,36 @@ class Database {
                 PDO::ATTR_EMULATE_PREPARES => false,
                 PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"
             ]);
+            $this->dbType = 'mysql';
         } catch (PDOException $e) {
-            error_log("数据库连接失败: " . $e->getMessage());
+            error_log("MySQL 连接失败: " . $e->getMessage());
             throw new Exception("数据库连接失败");
         }
+    }
+    
+    /**
+     * 测试 MySQL 连接是否可用
+     */
+    private function testMysqlConnection() {
+        $host = getenv('DB_HOST');
+        if (!$host || $host === 'mysql') {
+            return false;
+        }
+        return true;
+    }
+    
+    /**
+     * 执行 SQLite 初始化脚本
+     */
+    private function initializeSqliteSchema() {
+        $sqlFile = dirname(__DIR__) . '/database/init_sqlite.sql';
+        if (!file_exists($sqlFile)) {
+            error_log("SQLite 初始化脚本不存在: {$sqlFile}");
+            return;
+        }
+        
+        $sql = file_get_contents($sqlFile);
+        $this->pdo->exec($sql);
     }
     
     public static function getInstance() {
@@ -38,6 +116,13 @@ class Database {
     
     public function getConnection() {
         return $this->pdo;
+    }
+    
+    /**
+     * 获取数据库类型
+     */
+    public function getDatabaseType() {
+        return $this->dbType;
     }
     
     /**
