@@ -266,237 +266,114 @@ $externalStats = getExternalImageStats();
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-radius: 12px;
-            padding: 20px 30px;
+            padding: 12px 30px;
             margin-bottom: 20px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.3);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            position: relative;
-            z-index: 1;
-        }
-        .header h1 {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 24px;
-            color: white;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-            margin: 0;
-        }
-        .header .logo-img {
-            height: 48px;
-            width: auto;
-        }
-        .logout-btn {
-            padding: 10px 20px;
-            background: #dc3545;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        .logout-btn:hover {
-            background: #c82333;
-            transform: translateY(-2px);
-        }
-        .tabs {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            display: flex;
-            gap: 10px;
-            position: relative;
-            z-index: 1;
-        }
-        .tab-btn {
-            flex: 1;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            color: white;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .tab-btn.active {
-            background: rgba(255, 255, 255, 0.4);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-        .tab-btn:hover:not(.active) {
-            background: rgba(255, 255, 255, 0.3);
+            position: sticky;
+            top: 10px;
+            z-index: 1000;
         }
         .container {
-            max-width: 1000px;
+            max-width: 1400px;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-radius: 12px;
-            padding: 40px;
+            padding: 30px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
             border: 1px solid rgba(255, 255, 255, 0.3);
             position: relative;
             z-index: 1;
         }
-        h2 {
-            color: white;
-            margin-bottom: 25px;
-            font-size: 22px;
-            border-bottom: 2px solid rgba(102, 126, 234, 0.3);
-            padding-bottom: 10px;
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .header h1 {
             display: flex;
             align-items: center;
             gap: 10px;
-        }
-        .info-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .info-item:last-child {
-            border-bottom: none;
-        }
-        .label {
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 14px;
-        }
-        .value {
+            font-size: 20px;
             color: white;
-            font-weight: 600;
-            font-size: 14px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            margin: 0;
+            white-space: nowrap;
         }
-        .status {
-            text-align: center;
-            color: white;
-            font-size: 16px;
-            margin-bottom: 30px;
-            padding: 12px;
-            background: rgba(40, 167, 69, 0.2);
-            border-radius: 10px;
-            border: 1px solid rgba(40, 167, 69, 0.3);
-            font-weight: 600;
+        .header .logo-img {
+            height: 36px;
+            width: auto;
         }
         
-        /* 侧边栏样式 */
-        .sidebar {
-            position: fixed;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
+        /* 顶部导航菜单 */
+        .nav-menu {
             display: flex;
-            flex-direction: column;
             gap: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border-radius: 16px;
-            padding: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            z-index: 1000;
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            width: 200px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-        }
-        .sidebar.collapsed {
-            width: 66px;
+            align-items: center;
         }
         .nav-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 12px 18px;
+            gap: 8px;
+            padding: 8px 15px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 10px;
             color: rgba(255, 255, 255, 0.8);
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            white-space: nowrap;
-            width: 100%;
-            justify-content: flex-start;
-            font-size: 15px;
             text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 14px;
+            white-space: nowrap;
         }
         .nav-item:hover {
             background: rgba(255, 255, 255, 0.15);
             color: white;
+            transform: translateY(-2px);
         }
         .nav-item.active {
-            background: rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.2);
             color: white;
             border-color: rgba(255, 255, 255, 0.4);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
         }
-        .sidebar.collapsed .nav-item {
-            padding: 12px;
-            justify-content: center;
+        .nav-item .btn-icon {
+            font-size: 16px;
         }
-        .sidebar.collapsed .btn-text {
-            display: none;
-        }
+        
+        /* 页面二级导航 (Tabs) */
         .sub-nav {
             display: flex;
-            flex-direction: column;
-            gap: 5px;
-            margin-left: 10px;
-            padding-left: 10px;
-            border-left: 1px solid rgba(255, 255, 255, 0.1);
-            margin-top: -5px;
-            margin-bottom: 5px;
-        }
-        .sidebar.collapsed .sub-nav {
-            display: none;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 25px;
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .sub-nav-item {
-            font-size: 13px;
-            padding: 8px 12px;
-            color: rgba(255, 255, 255, 0.6);
-            text-decoration: none;
-            border-radius: 8px;
-            transition: all 0.2s;
+            padding: 10px 20px;
+            color: rgba(255, 255, 255, 0.7);
             cursor: pointer;
-            display: block;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 14px;
         }
         .sub-nav-item:hover {
-            color: white;
             background: rgba(255, 255, 255, 0.1);
+            color: white;
         }
         .sub-nav-item.active {
+            background: rgba(255, 255, 255, 0.2);
             color: white;
-            background: rgba(255, 255, 255, 0.15);
-            font-weight: bold;
-        }
-        .toggle-btn {
-            margin-top: 5px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 15px;
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            justify-content: center;
-            font-size: 20px;
-            cursor: pointer;
-            color: white;
-            display: flex;
-            width: 100%;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
         
         /* 悬浮退出按钮 */
@@ -541,6 +418,12 @@ $externalStats = getExternalImageStats();
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        h2 { color: white; margin-bottom: 20px; font-size: 20px; border-bottom: 2px solid rgba(102, 126, 234, 0.3); padding-bottom: 10px; }
+        .status { background: rgba(40, 167, 69, 0.2); color: #28a745; padding: 10px 15px; border-radius: 8px; margin-bottom: 20px; display: inline-block; font-weight: 600; font-size: 14px; border: 1px solid rgba(40, 167, 69, 0.3); }
+        .info-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        .info-item:last-child { border-bottom: none; }
+        .info-item .label { color: rgba(255, 255, 255, 0.6); font-size: 14px; }
+        .info-item .value { color: white; font-weight: 600; font-size: 14px; }
         #current-time {
             font-family: Arial, sans-serif;
         }
@@ -623,212 +506,216 @@ $externalStats = getExternalImageStats();
 </head>
 <body>
     <div class="header">
-        <a href="/upload.php" style="text-decoration: none;">
-            <h1 style="cursor: pointer;">
-                <img src="/public/assets/images/logo-white.png" alt="PixPort" class="logo-img">
-                <span>- 监控面板</span>
-            </h1>
-        </a>
+        <div class="header-left">
+            <a href="/upload.php" style="text-decoration: none;">
+                <h1 style="cursor: pointer;">
+                    <img src="/public/assets/images/logo-white.png" alt="PixPort" class="logo-img">
+                    <span>- 监控面板</span>
+                </h1>
+            </a>
+        </div>
+        
+        <nav class="nav-menu">
+            <a href="/upload.php" class="nav-item">
+                <span class="btn-icon">📤</span>
+                <span class="btn-text">上传</span>
+            </a>
+            <a href="/gallery.php" class="nav-item">
+                <span class="btn-icon">🎨</span>
+                <span class="btn-text">画廊</span>
+            </a>
+            <div class="nav-item active">
+                <span class="btn-icon">📊</span>
+                <span class="btn-text">监控</span>
+            </div>
+            <a href="/api-panel.php" class="nav-item">
+                <span class="btn-icon">🔧</span>
+                <span class="btn-text">API</span>
+            </a>
+            <a href="/system-panel.php" class="nav-item">
+                <span class="btn-icon">⚙️</span>
+                <span class="btn-text">设置</span>
+            </a>
+            <a href="?logout=1" class="nav-item" style="background: rgba(220, 53, 69, 0.15); border-color: rgba(220, 53, 69, 0.2); color: #ffb3b3;">
+                <span class="btn-icon">🚪</span>
+                <span class="btn-text">退出</span>
+            </a>
+        </nav>
     </div>
 
-    <div class="sidebar" id="sidebar">
-        <a href="/upload.php" class="nav-item">
-            <span class="btn-icon">📤</span>
-            <span class="btn-text">上传图片</span>
-        </a>
-        <a href="/gallery.php" class="nav-item">
-            <span class="btn-icon">🎨</span>
-            <span class="btn-text">图片画廊</span>
-        </a>
-        <div class="nav-item active">
-            <span class="btn-icon">📊</span>
-            <span class="btn-text">监控面板</span>
-        </div>
+    <!-- 主容器 -->
+    <div class="container">
+        <!-- 二级导航 Tab -->
         <div class="sub-nav">
-            <div class="sub-nav-item active" id="sub-nav-system" onclick="switchSubTab('system')">系统监控</div>
-            <div class="sub-nav-item" id="sub-nav-database" onclick="switchSubTab('database')">数据库监控</div>
-            <div class="sub-nav-item" id="sub-nav-images" onclick="switchSubTab('images')">图片统计</div>
+            <div class="sub-nav-item active" id="sub-nav-system" onclick="switchSubTab('system')">🖥️ 系统监控</div>
+            <div class="sub-nav-item" id="sub-nav-database" onclick="switchSubTab('database')">🗄️ 数据库监控</div>
+            <div class="sub-nav-item" id="sub-nav-images" onclick="switchSubTab('images')">🖼️ 图片统计</div>
         </div>
-        <a href="/api-panel.php" class="nav-item">
-            <span class="btn-icon">🔧</span>
-            <span class="btn-text">API管理</span>
-        </a>
-        <a href="/system-panel.php" class="nav-item">
-            <span class="btn-icon">⚙️</span>
-            <span class="btn-text">系统设置</span>
-        </a>
-        <div class="toggle-btn" onclick="toggleSidebar()">
-            <span id="toggleIcon">⬅️</span>
-        </div>
-    </div>
 
-    <!-- 系统监控 Tab -->
-    <div class="container sub-tab-content active" id="system-tab">
-        <h2>📊 系统监控</h2>
-        <div class="status">✅ 服务运行中</div>
-    
-        <div class="info-item">
-            <span class="label">PHP 版本</span>
-            <span class="value"><?php echo $info['php_version']; ?></span>
-        </div>
+        <!-- 系统监控 Tab -->
+        <div class="sub-tab-content active" id="system-tab">
+            <h2>📊 系统监控</h2>
+            <div class="status">✅ 服务运行中</div>
         
-        <div class="info-item">
-            <span class="label">操作系统</span>
-            <span class="value"><?php echo $info['php_os']; ?></span>
-        </div>
-        
-        <div class="info-item">
-            <span class="label">服务器软件</span>
-            <span class="value"><?php echo $info['server_software']; ?></span>
-        </div>
-        
-        <div class="info-item">
-            <span class="label">服务器名称</span>
-            <span class="value">Prisma</span>
-        </div>
-        
-        <div class="info-item">
-            <span class="label">内存限制</span>
-            <span class="value"><?php echo $info['memory_limit']; ?></span>
-        </div>
-        
-        <div class="info-item">
-            <span class="label">内存使用</span>
-            <span class="value"><?php echo $info['memory_usage']; ?></span>
-        </div>
-        
-        <div class="info-item">
-            <span class="label">当前时间</span>
-            <span class="value" id="current-time"><?php echo $info['current_time']; ?></span>
-        </div>
-        
-        <div class="info-item">
-            <span class="label">客户端IP</span>
-            <span class="value"><?php echo $info['client_ip']; ?></span>
-        </div>
-    </div>
-
-    <!-- 数据库监控 Tab -->
-    <div class="container sub-tab-content" id="database-tab">
-        <h2>🗄️ 数据库监控</h2>
-        <div class="status"><?php echo $dbInfo['status']; ?></div>
-        
-        <?php if ($dbInfo['error']): ?>
-        <div class="error-message" style="background: rgba(220, 53, 69, 0.3); border: 1px solid rgba(220, 53, 69, 0.5); padding: 15px; border-radius: 8px; margin-bottom: 20px; color: #ffb3b3;">
-            <strong>⚠️ 连接错误:</strong> <?php echo htmlspecialchars($dbInfo['error']); ?>
-        </div>
-        <?php endif; ?>
-        
-        <div class="info-item">
-            <span class="label">数据库类型</span>
-            <span class="value"><?php echo $dbInfo['type']; ?></span>
-        </div>
-        
-        <?php if ($dbInfo['type'] === 'SQLITE'): ?>
-        <div class="info-item">
-            <span class="label">数据库路径</span>
-            <span class="value" style="font-size: 12px; word-break: break-all;"><?php echo $dbInfo['path']; ?></span>
-        </div>
-        <?php else: ?>
-        <div class="info-item">
-            <span class="label">主机地址</span>
-            <span class="value"><?php echo $dbInfo['host'] ?? 'N/A'; ?></span>
-        </div>
-        
-        <div class="info-item">
-            <span class="label">端口号</span>
-            <span class="value"><?php echo $dbInfo['port'] ?? 'N/A'; ?></span>
-        </div>
-        
-        <div class="info-item">
-            <span class="label">数据库名</span>
-            <span class="value"><?php echo $dbInfo['database'] ?? 'N/A'; ?></span>
-        </div>
-        
-        <div class="info-item">
-            <span class="label">用户名</span>
-            <span class="value"><?php echo $dbInfo['user'] ?? 'N/A'; ?></span>
-        </div>
-        <?php endif; ?>
-        
-        <div class="info-item">
-            <span class="label">数据库版本</span>
-            <span class="value"><?php echo $dbInfo['version']; ?></span>
-        </div>
-        
-        <div class="info-item">
-            <span class="label">数据库大小</span>
-            <span class="value"><?php echo $dbInfo['database_size'] ?? '0 MB'; ?></span>
-        </div>
-    </div>
-
-    <!-- 图片统计 Tab -->
-    <div class="container sub-tab-content" id="images-tab">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="margin-bottom: 0;">🖼️ 图片统计</h2>
-            <button onclick="refreshStats()" style="
-                padding: 10px 20px;
-                background: rgba(40, 167, 69, 0.8);
-                color: white;
-                border: none;
-                border-radius: 8px;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.3s;
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-            " onmouseover="this.style.background='rgba(40, 167, 69, 1)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='rgba(40, 167, 69, 0.8)'; this.style.transform='translateY(0)'">
-                🔄 刷新数据
-            </button>
-        </div>
-        
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>📸 本地总图片</h3>
-                <div class="number" id="total-local">0</div>
-                <div class="desc">本地存储的图片数量</div>
+            <div class="info-item">
+                <span class="label">PHP 版本</span>
+                <span class="value"><?php echo $info['php_version']; ?></span>
             </div>
-            <div class="stat-card">
-                <h3>🌐 外链总数</h3>
-                <div class="number" id="total-external">0</div>
-                <div class="desc">外链配置的图片数量</div>
+            
+            <div class="info-item">
+                <span class="label">操作系统</span>
+                <span class="value"><?php echo $info['php_os']; ?></span>
             </div>
-            <div class="stat-card">
-                <h3>📁 PC 端图片</h3>
-                <div class="number" id="total-pc">0</div>
-                <div class="desc">桌面端图片数量</div>
+            
+            <div class="info-item">
+                <span class="label">服务器软件</span>
+                <span class="value"><?php echo $info['server_software']; ?></span>
             </div>
-            <div class="stat-card">
-                <h3>📱 PE 端图片</h3>
-                <div class="number" id="total-pe">0</div>
-                <div class="desc">移动端图片数量</div>
+            
+            <div class="info-item">
+                <span class="label">服务器名称</span>
+                <span class="value">Prisma</span>
             </div>
-            <div class="stat-card">
-                <h3>💾 存储占用</h3>
-                <div class="number" style="font-size: 24px; padding: 4px 0;"><?php echo $imageStats['total_size']; ?></div>
-                <div class="desc">本地文件总大小</div>
+            
+            <div class="info-item">
+                <span class="label">内存限制</span>
+                <span class="value"><?php echo $info['memory_limit']; ?></span>
             </div>
-            <div class="stat-card">
-                <h3>📚 相册总数</h3>
-                <div class="number"><?php echo $imageStats['albums']; ?></div>
-                <div class="desc">分类相册总数</div>
+            
+            <div class="info-item">
+                <span class="label">内存使用</span>
+                <span class="value"><?php echo $info['memory_usage']; ?></span>
+            </div>
+            
+            <div class="info-item">
+                <span class="label">当前时间</span>
+                <span class="value" id="current-time"><?php echo $info['current_time']; ?></span>
+            </div>
+            
+            <div class="info-item">
+                <span class="label">客户端IP</span>
+                <span class="value"><?php echo $info['client_ip']; ?></span>
             </div>
         </div>
 
-        <div class="chart-row">
-            <div class="chart-container">
-                <h3 style="text-align: center; color: white; margin-bottom: 15px; font-size: 16px; text-shadow: 1px 1px 3px rgba(0,0,0,0.3);">图片来源分布</h3>
-                <canvas id="sourceChart"></canvas>
+        <!-- 数据库监控 Tab -->
+        <div class="sub-tab-content" id="database-tab">
+            <h2>🗄️ 数据库监控</h2>
+            <div class="status"><?php echo $dbInfo['status']; ?></div>
+            
+            <?php if ($dbInfo['error']): ?>
+            <div class="error-message" style="background: rgba(220, 53, 69, 0.3); border: 1px solid rgba(220, 53, 69, 0.5); padding: 15px; border-radius: 8px; margin-bottom: 20px; color: #ffb3b3;">
+                <strong>⚠️ 连接错误:</strong> <?php echo htmlspecialchars($dbInfo['error']); ?>
             </div>
-            <div class="chart-container">
-                <h3 style="text-align: center; color: white; margin-bottom: 15px; font-size: 16px; text-shadow: 1px 1px 3px rgba(0,0,0,0.3);">图片格式分布</h3>
-                <canvas id="formatChart"></canvas>
+            <?php endif; ?>
+            
+            <div class="info-item">
+                <span class="label">数据库类型</span>
+                <span class="value"><?php echo $dbInfo['type']; ?></span>
+            </div>
+            
+            <?php if ($dbInfo['type'] === 'SQLITE'): ?>
+            <div class="info-item">
+                <span class="label">数据库路径</span>
+                <span class="value" style="font-size: 12px; word-break: break-all;"><?php echo $dbInfo['path']; ?></span>
+            </div>
+            <?php else: ?>
+            <div class="info-item">
+                <span class="label">主机地址</span>
+                <span class="value"><?php echo $dbInfo['host'] ?? 'N/A'; ?></span>
+            </div>
+            
+            <div class="info-item">
+                <span class="label">端口号</span>
+                <span class="value"><?php echo $dbInfo['port'] ?? 'N/A'; ?></span>
+            </div>
+            
+            <div class="info-item">
+                <span class="label">数据库名</span>
+                <span class="value"><?php echo $dbInfo['database'] ?? 'N/A'; ?></span>
+            </div>
+            
+            <div class="info-item">
+                <span class="label">用户名</span>
+                <span class="value"><?php echo $dbInfo['user'] ?? 'N/A'; ?></span>
+            </div>
+            <?php endif; ?>
+            
+            <div class="info-item">
+                <span class="label">数据库版本</span>
+                <span class="value"><?php echo $dbInfo['version']; ?></span>
+            </div>
+            
+            <div class="info-item">
+                <span class="label">数据库大小</span>
+                <span class="value"><?php echo $dbInfo['database_size'] ?? '0 MB'; ?></span>
+            </div>
+        </div>
+
+        <!-- 图片统计 Tab -->
+        <div class="sub-tab-content" id="images-tab">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin-bottom: 0;">🖼️ 图片统计</h2>
+                <button onclick="refreshStats()" style="
+                    padding: 10px 20px;
+                    background: rgba(40, 167, 69, 0.8);
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+                " onmouseover="this.style.background='rgba(40, 167, 69, 1)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='rgba(40, 167, 69, 0.8)'; this.style.transform='translateY(0)'">
+                    🔄 刷新数据
+                </button>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>📸 本地总图片</h3>
+                    <div class="number" id="total-local">0</div>
+                    <div class="desc">本地存储的图片数量</div>
+                </div>
+                <div class="stat-card">
+                    <h3>🌐 外链总数</h3>
+                    <div class="number" id="total-external">0</div>
+                    <div class="desc">外链配置的图片数量</div>
+                </div>
+                <div class="stat-card">
+                    <h3>📁 PC 端图片</h3>
+                    <div class="number" id="total-pc">0</div>
+                    <div class="desc">桌面端图片数量</div>
+                </div>
+                <div class="stat-card">
+                    <h3>📱 PE 端图片</h3>
+                    <div class="number" id="total-pe">0</div>
+                    <div class="desc">移动端图片数量</div>
+                </div>
+                <div class="stat-card">
+                    <h3>💾 存储占用</h3>
+                    <div class="number" style="font-size: 24px; padding: 4px 0;"><?php echo $imageStats['total_size']; ?></div>
+                    <div class="desc">本地文件总大小</div>
+                </div>
+                <div class="stat-card">
+                    <h3>📚 相册总数</h3>
+                    <div class="number"><?php echo $imageStats['albums']; ?></div>
+                    <div class="desc">分类相册总数</div>
+                </div>
+            </div>
+
+            <div class="chart-row">
+                <div class="chart-container">
+                    <h3 style="text-align: center; color: white; margin-bottom: 15px; font-size: 16px; text-shadow: 1px 1px 3px rgba(0,0,0,0.3);">图片来源分布</h3>
+                    <canvas id="sourceChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3 style="text-align: center; color: white; margin-bottom: 15px; font-size: 16px; text-shadow: 1px 1px 3px rgba(0,0,0,0.3);">图片格式分布</h3>
+                    <canvas id="formatChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
-
-    <a href="?logout=1" class="floating-logout" title="退出登录">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 4.001H5v14a2 2 0 0 0 2 2h8m1-5l3-3m0 0l-3-3m3 3H9"/></svg>
-    </a>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
@@ -957,20 +844,6 @@ $externalStats = getExternalImageStats();
             createFormatChart(stats);
         }
 
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const icon = document.getElementById('toggleIcon');
-            sidebar.classList.toggle('collapsed');
-            
-            if (sidebar.classList.contains('collapsed')) {
-                icon.innerText = '➡️';
-                localStorage.setItem('sidebarCollapsed', 'true');
-            } else {
-                icon.innerText = '⬅️';
-                localStorage.setItem('sidebarCollapsed', 'false');
-            }
-        }
-
         function switchSubTab(tabId) {
             // 切换按钮状态
             document.querySelectorAll('.sub-nav-item').forEach(btn => {
@@ -993,18 +866,6 @@ $externalStats = getExternalImageStats();
 
         // 页面加载时恢复状态
         window.onload = function() {
-            // 恢复侧边栏状态
-            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-            const sidebar = document.getElementById('sidebar');
-            const icon = document.getElementById('toggleIcon');
-            if (isCollapsed) {
-                sidebar.classList.add('collapsed');
-                icon.innerText = '➡️';
-            } else {
-                sidebar.classList.remove('collapsed');
-                icon.innerText = '⬅️';
-            }
-
             // 恢复标签页
             const urlParams = new URLSearchParams(window.location.search);
             const urlTab = urlParams.get('tab');

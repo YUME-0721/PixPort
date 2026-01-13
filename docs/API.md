@@ -1,10 +1,10 @@
-# Image API v1.0 (极简版) 文档
+# Image API v2.0 文档
 
-Image API v1.0 是一个高性能的图片分发服务，支持设备自适应、本地存储与数据库外链混合模式。该版本已简化架构，不再进行自动格式转换，以确保最高效的响应和原画质输出。
+Image API v2.0 是一个高性能的图片分发服务，支持设备自适应、本地存储与数据库外链混合模式。该版本基于数据库驱动，提供更丰富的图片元数据返回。
 
 ## 基本信息
 
-- **API版本**: 1.0
+- **API版本**: 2.0
 - **请求方式**: GET
 - **响应格式**: JSON (默认) / TEXT / 重定向
 - **支持格式**: JPEG, PNG, GIF, WebP, AVIF
@@ -24,13 +24,13 @@ GET /image_api.php
 
 ## 请求参数
 
-| 参数名 | 类型 | 默认值 | 说明 |
-|--------|------|--------|------|
-| `count` | int | 1 | 返回图片数量，范围: 1-50 |
-| `type` | string | auto | 设备类型: `pc`(桌面端) / `pe`(移动端)。留空则根据 UA 自动检测 |
-| `format` | string | json | 响应格式: `json` (默认) / `text` (纯文本URL) / `url` (等同text) |
-| `return` | string | json | 返回行为: `json` / `redirect` (仅当 count=1 时有效，直接重定向到图片) |
-| `external` | boolean | false | 存储模式: `true`/`1` (外链模式) / `false`/`0` (本地模式) |
+| 参数名 | 类型 | 必填 | 默认值 | 说明 |
+| :--- | :--- | :--- | :--- | :--- |
+| `count` | integer | 否 | `1` | 返回图片的数量。支持范围：1 - 50。 |
+| `type` | string | 否 | `(自动检测)` | 目标设备类型：`pc` (桌面端) / `pe` (移动端)。留空则由系统根据 User-Agent 自动识别。 |
+| `format` | string | 否 | `json` | **响应数据格式**：`json` (默认) / `text` (纯文本 URL 列表) / `url` (等同于 text)。 |
+| `return` | string | 否 | `json` | **返回行为控制**：`json` (返回数据对象) / `redirect` (直接重定向到图片，仅当 `count=1` 时有效)。 |
+| `external` | boolean | 否 | `false` | **存储模式**：`true` 或 `1` (获取外链图片) / `false` 或 `0` (获取本地库图片)。 |
 
 ---
 
@@ -81,24 +81,32 @@ GET /image_api.php?external=true&type=pe&count=3&format=text
 ```json
 {
   "success": true,
-  "count": 2,
+  "count": 1,
   "type": "pc",
   "mode": "random",
-  "total_available": 150,
+  "total_available": 1,
   "timestamp": 1704556800,
-  "api_version": "1.0",
+  "api_version": "2.0",
   "return_type": "json",
   "external_mode": false,
   "user_agent": "Mozilla/5.0...",
   "images": [
     {
-      "filename": "20240106_abc123.png",
-      "path": "D:/code/picflow-api/images/pc/20240106_abc123.png",
-      "url": "http://localhost/images/pc/20240106_abc123.png",
+      "id": 1,
+      "filename": "abc123.png",
+      "url": "http://localhost/images/2024/01/06/abc123.png",
       "extension": "png",
       "type": "pc",
+      "format": "png",
+      "width": 1920,
+      "height": 1080,
       "size": 102455,
-      "source": "images"
+      "tags": null,
+      "description": null,
+      "upload_time": "2024-01-06 12:00:00",
+      "external": false,
+      "storage_type": "local",
+      "converted": false
     }
   ]
 }
@@ -137,4 +145,4 @@ http://example.com/images/pc/pic2.png
 3.  **PNG 优化**：虽然系统支持 PNG，但若对加载速度有极端要求，建议上传前先进行压缩。
 
 ---
-**Image API v1.0** - 保持纯粹，追求极致响应。
+**Image API v2.0** - 保持纯粹，追求极致响应。

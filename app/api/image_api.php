@@ -110,6 +110,8 @@ function getImages($type, $count, $external = false) {
     try {
         require_once dirname(__DIR__, 2) . '/includes/Database.php';
         $db = Database::getInstance();
+        $dbType = $db->getDatabaseType();
+        $randomFunc = ($dbType === 'sqlite') ? 'RANDOM()' : 'RAND()';
         
         $storageType = $external ? 'external' : 'local';
         $limit = intval($count * 10); // 获取较多数据以供随机洗牌
@@ -117,7 +119,7 @@ function getImages($type, $count, $external = false) {
         $sql = "SELECT id, filename, url, device_type, format, width, height, file_size, tags, description, upload_time 
                 FROM images 
                 WHERE storage_type = :storage_type AND device_type = :type
-                ORDER BY RAND()
+                ORDER BY {$randomFunc}
                 LIMIT {$limit}";
         
         $result = $db->fetchAll($sql, [

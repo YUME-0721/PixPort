@@ -723,114 +723,71 @@ $totalPages = ceil($totalImages / $perPage);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-radius: 12px;
-            padding: 20px 30px;
+            padding: 12px 30px;
             margin-bottom: 20px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.3);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            position: relative;
-            z-index: 1;
+            position: sticky;
+            top: 10px;
+            z-index: 1000;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
         }
         .header h1 {
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 24px;
+            font-size: 20px;
             color: white;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
             margin: 0;
+            white-space: nowrap;
         }
         .header .logo-img {
-            height: 48px;
+            height: 36px;
             width: auto;
         }
-        .logout-btn {
-            padding: 10px 20px;
-            background: #dc3545;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        .logout-btn:hover {
-            background: #c82333;
-            transform: translateY(-2px);
-        }
-        /* 侧边栏样式 */
-        .sidebar {
-            position: fixed;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
+        
+        /* 顶部导航菜单 */
+        .nav-menu {
             display: flex;
-            flex-direction: column;
             gap: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border-radius: 16px;
-            padding: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            z-index: 1000;
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            width: 200px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-        }
-        .sidebar.collapsed {
-            width: 66px;
+            align-items: center;
         }
         .nav-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 12px 18px;
+            gap: 8px;
+            padding: 8px 15px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 10px;
             color: rgba(255, 255, 255, 0.8);
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            white-space: nowrap;
-            width: 100%;
-            justify-content: flex-start;
-            font-size: 15px;
             text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 14px;
+            white-space: nowrap;
         }
         .nav-item:hover {
             background: rgba(255, 255, 255, 0.15);
             color: white;
+            transform: translateY(-2px);
         }
         .nav-item.active {
-            background: rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.2);
             color: white;
             border-color: rgba(255, 255, 255, 0.4);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
         }
-        .sidebar.collapsed .nav-item {
-            padding: 12px;
-            justify-content: center;
-        }
-        .sidebar.collapsed .btn-text {
-            display: none;
-        }
-        .toggle-btn {
-            margin-top: 5px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 15px;
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            justify-content: center;
-            font-size: 20px;
-            cursor: pointer;
-            color: white;
-            display: flex;
-            width: 100%;
+        .nav-item .btn-icon {
+            font-size: 16px;
         }
         
         /* 悬浮退出按钮 */
@@ -1950,38 +1907,41 @@ $totalPages = ceil($totalImages / $perPage);
 </head>
 <body>
     <div class="header">
-        <a href="/upload.php" style="text-decoration: none;">
-            <h1 style="cursor: pointer;">
-                <img src="/public/assets/images/logo-white.png" alt="PixPort" class="logo-img">
-                <span>- 图片画廊</span>
-            </h1>
-        </a>
-    </div>
-
-    <div class="sidebar" id="sidebar">
-        <a href="/upload.php" class="nav-item">
-            <span class="btn-icon">📤</span>
-            <span class="btn-text">上传图片</span>
-        </a>
-        <div class="nav-item active">
-            <span class="btn-icon">🎨</span>
-            <span class="btn-text">图片画廊</span>
+        <div class="header-left">
+            <a href="/upload.php" style="text-decoration: none;">
+                <h1 style="cursor: pointer;">
+                    <img src="/public/assets/images/logo-white.png" alt="PixPort" class="logo-img">
+                    <span>- 图片画廊</span>
+                </h1>
+            </a>
         </div>
-        <a href="/panel.php" class="nav-item">
-            <span class="btn-icon">📊</span>
-            <span class="btn-text">监控面板</span>
-        </a>
-        <a href="/api-panel.php" class="nav-item">
-            <span class="btn-icon">🔧</span>
-            <span class="btn-text">API管理</span>
-        </a>
-        <a href="/system-panel.php" class="nav-item">
-            <span class="btn-icon">⚙️</span>
-            <span class="btn-text">系统设置</span>
-        </a>
-        <div class="toggle-btn" onclick="toggleSidebar()">
-            <span id="toggleIcon">⬅️</span>
-        </div>
+        
+        <nav class="nav-menu">
+            <a href="/upload.php" class="nav-item">
+                <span class="btn-icon">📤</span>
+                <span class="btn-text">上传</span>
+            </a>
+            <div class="nav-item active">
+                <span class="btn-icon">🎨</span>
+                <span class="btn-text">画廊</span>
+            </div>
+            <a href="/panel.php" class="nav-item">
+                <span class="btn-icon">📊</span>
+                <span class="btn-text">监控</span>
+            </a>
+            <a href="/api-panel.php" class="nav-item">
+                <span class="btn-icon">🔧</span>
+                <span class="btn-text">API</span>
+            </a>
+            <a href="/system-panel.php" class="nav-item">
+                <span class="btn-icon">⚙️</span>
+                <span class="btn-text">设置</span>
+            </a>
+            <a href="?logout=1" class="nav-item" style="background: rgba(220, 53, 69, 0.15); border-color: rgba(220, 53, 69, 0.2); color: #ffb3b3;">
+                <span class="btn-icon">🚪</span>
+                <span class="btn-text">退出</span>
+            </a>
+        </nav>
     </div>
 
     <div class="container">
@@ -2325,10 +2285,6 @@ $totalPages = ceil($totalImages / $perPage);
         </div>
         <div id="statusText" class="status-text">正在处理...</div>
     </div>
-
-    <a href="?logout=1" class="floating-logout" title="退出登录">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 4.001H5v14a2 2 0 0 0 2 2h8m1-5l3-3m0 0l-3-3m3 3H9"/></svg>
-    </a>
 
     <script>
         function toggleSidebar() {
@@ -3054,31 +3010,6 @@ $totalPages = ceil($totalImages / $perPage);
             showNotification('已复制到剪贴板');
         }
         
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const icon = document.getElementById('toggleIcon');
-            sidebar.classList.toggle('collapsed');
-            
-            if (sidebar.classList.contains('collapsed')) {
-                icon.innerText = '➡️';
-                localStorage.setItem('sidebarCollapsed', 'true');
-            } else {
-                icon.innerText = '⬅️';
-                localStorage.setItem('sidebarCollapsed', 'false');
-            }
-        }
-
-        // 页面加载时恢复侧边栏状态
-        window.addEventListener('DOMContentLoaded', () => {
-            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-            if (isCollapsed) {
-                const sidebar = document.getElementById('sidebar');
-                const icon = document.getElementById('toggleIcon');
-                if (sidebar) sidebar.classList.add('collapsed');
-                if (icon) icon.innerText = '➡️';
-            }
-        });
-
         function showNotification(message, type = 'success') {
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;

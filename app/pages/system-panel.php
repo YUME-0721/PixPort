@@ -274,294 +274,114 @@ $currentBg = $config['background_url'];
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-radius: 12px;
-            padding: 20px 30px;
+            padding: 12px 30px;
             margin-bottom: 20px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.3);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            position: relative;
-            z-index: 1;
-        }
-        .header h1 {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 24px;
-            color: white;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-            margin: 0;
-        }
-        .header .logo-img {
-            height: 48px;
-            width: auto;
-        }
-        .logout-btn {
-            padding: 10px 20px;
-            background: #dc3545;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        .logout-btn:hover {
-            background: #c82333;
-            transform: translateY(-2px);
-        }
-        .tabs {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            display: flex;
-            gap: 10px;
-            position: relative;
-            z-index: 1;
-        }
-        .tab-btn {
-            flex: 1;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            color: white;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .tab-btn.active {
-            background: rgba(255, 255, 255, 0.4);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-        .tab-btn:hover:not(.active) {
-            background: rgba(255, 255, 255, 0.3);
+            position: sticky;
+            top: 10px;
+            z-index: 1000;
         }
         .container {
-            max-width: 1000px;
+            max-width: 1400px;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-radius: 12px;
-            padding: 40px;
+            padding: 30px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
             border: 1px solid rgba(255, 255, 255, 0.3);
             position: relative;
             z-index: 1;
         }
-        section {
-            margin-bottom: 40px;
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
         }
-        h2 {
-            color: white;
-            margin-bottom: 25px;
-            font-size: 22px;
-            border-bottom: 2px solid rgba(102, 126, 234, 0.3);
-            padding-bottom: 10px;
+        .header h1 {
             display: flex;
             align-items: center;
             gap: 10px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
+            font-size: 20px;
             color: white;
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            font-size: 14px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            margin: 0;
+            white-space: nowrap;
         }
-        input[type="text"],
-        input[type="password"] {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            background: rgba(0, 0, 0, 0.3);
-            color: white !important;
-            font-size: 14px;
-            transition: all 0.3s;
+        .header .logo-img {
+            height: 36px;
+            width: auto;
         }
-        input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-        /* 玻璃按钮样式 */
-        .glass-btn {
-            background: rgba(255, 255, 255, 0.1) !important;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
-            background-image: none !important;
-        }
-        .glass-btn:hover {
-            background: rgba(255, 255, 255, 0.2) !important;
-            border-color: rgba(255, 255, 255, 0.4) !important;
-            transform: translateY(-2px);
-        }
-        input:focus {
-            outline: none;
-            border-color: #667eea;
-            background: rgba(0, 0, 0, 0.4);
-        }
-        button {
-            padding: 12px 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 15px;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        }
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-        }
-        .alert {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            font-weight: 600;
-        }
-        .alert-success {
-            background: rgba(40, 167, 69, 0.2);
-            border: 1px solid rgba(40, 167, 69, 0.5);
-            color: #28a745;
-        }
-        .alert-danger {
-            background: rgba(220, 53, 69, 0.2);
-            border: 1px solid rgba(220, 53, 69, 0.5);
-            color: #dc3545;
-        }
-        .hint {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 12px;
-            margin-top: 5px;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-        }
-        /* 侧边栏样式 */
-        .sidebar {
-            position: fixed;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
+        
+        /* 顶部导航菜单 */
+        .nav-menu {
             display: flex;
-            flex-direction: column;
             gap: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border-radius: 16px;
-            padding: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            z-index: 1000;
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            width: 200px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-        }
-        .sidebar.collapsed {
-            width: 66px;
+            align-items: center;
         }
         .nav-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 12px 18px;
+            gap: 8px;
+            padding: 8px 15px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 10px;
             color: rgba(255, 255, 255, 0.8);
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            white-space: nowrap;
-            width: 100%;
-            justify-content: flex-start;
-            font-size: 15px;
             text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 14px;
+            white-space: nowrap;
         }
         .nav-item:hover {
             background: rgba(255, 255, 255, 0.15);
             color: white;
+            transform: translateY(-2px);
         }
         .nav-item.active {
-            background: rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.2);
             color: white;
             border-color: rgba(255, 255, 255, 0.4);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
         }
-        .sidebar.collapsed .nav-item {
-            padding: 12px;
-            justify-content: center;
+        .nav-item .btn-icon {
+            font-size: 16px;
         }
-        .sidebar.collapsed .btn-text {
-            display: none;
-        }
+        
+        /* 页面二级导航 (Tabs) */
         .sub-nav {
             display: flex;
-            flex-direction: column;
-            gap: 5px;
-            margin-left: 10px;
-            padding-left: 10px;
-            border-left: 1px solid rgba(255, 255, 255, 0.1);
-            margin-top: -5px;
-            margin-bottom: 5px;
-        }
-        .sidebar.collapsed .sub-nav {
-            display: none;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 25px;
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .sub-nav-item {
-            font-size: 13px;
-            padding: 8px 12px;
-            color: rgba(255, 255, 255, 0.6);
-            text-decoration: none;
-            border-radius: 8px;
-            transition: all 0.2s;
+            padding: 10px 20px;
+            color: rgba(255, 255, 255, 0.7);
             cursor: pointer;
-            display: block;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 14px;
         }
         .sub-nav-item:hover {
-            color: white;
             background: rgba(255, 255, 255, 0.1);
+            color: white;
         }
         .sub-nav-item.active {
+            background: rgba(255, 255, 255, 0.2);
             color: white;
-            background: rgba(255, 255, 255, 0.15);
-            font-weight: bold;
-        }
-        .toggle-btn {
-            margin-top: 5px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 15px;
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            justify-content: center;
-            font-size: 20px;
-            cursor: pointer;
-            color: white;
-            display: flex;
-            width: 100%;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
         
         /* 悬浮退出按钮 */
@@ -606,50 +426,69 @@ $currentBg = $config['background_url'];
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        section { margin-bottom: 30px; }
+        h2 { color: white; margin-bottom: 20px; font-size: 20px; border-bottom: 2px solid rgba(102, 126, 234, 0.3); padding-bottom: 10px; }
+        .form-group { margin-bottom: 20px; text-align: left; }
+        label { color: white; display: block; margin-bottom: 8px; font-weight: 600; }
+        input[type="text"], input[type="password"], input[type="file"] { width: 100%; padding: 12px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(0, 0, 0, 0.2); color: white; font-size: 14px; }
+        .hint { color: rgba(255, 255, 255, 0.5); font-size: 12px; margin-top: 5px; }
+        .glass-btn { padding: 12px 25px; background: rgba(102, 126, 234, 0.8); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .glass-btn:hover { background: rgba(102, 126, 234, 1); transform: translateY(-2px); }
+        .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: 600; }
+        .alert-success { background: rgba(40, 167, 69, 0.2); border: 1px solid rgba(40, 167, 69, 0.4); color: #28a745; }
+        .alert-danger { background: rgba(220, 53, 69, 0.2); border: 1px solid rgba(220, 53, 69, 0.4); color: #ff6b6b; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
     <div class="header">
-        <a href="/upload.php" style="text-decoration: none;">
-            <h1 style="cursor: pointer;">
-                <img src="/public/assets/images/logo-white.png" alt="PixPort" class="logo-img">
-                <span>- 系统设置</span>
-            </h1>
-        </a>
+        <div class="header-left">
+            <a href="/upload.php" style="text-decoration: none;">
+                <h1 style="cursor: pointer;">
+                    <img src="/public/assets/images/logo-white.png" alt="PixPort" class="logo-img">
+                    <span>- 系统设置</span>
+                </h1>
+            </a>
+        </div>
+        
+        <nav class="nav-menu">
+            <a href="/upload.php" class="nav-item">
+                <span class="btn-icon">📤</span>
+                <span class="btn-text">上传</span>
+            </a>
+            <a href="/gallery.php" class="nav-item">
+                <span class="btn-icon">🎨</span>
+                <span class="btn-text">画廊</span>
+            </a>
+            <a href="/panel.php" class="nav-item">
+                <span class="btn-icon">📊</span>
+                <span class="btn-text">监控</span>
+            </a>
+            <a href="/api-panel.php" class="nav-item">
+                <span class="btn-icon">🔧</span>
+                <span class="btn-text">API</span>
+            </a>
+            <div class="nav-item active">
+                <span class="btn-icon">⚙️</span>
+                <span class="btn-text">设置</span>
+            </div>
+            <a href="?logout=1" class="nav-item" style="background: rgba(220, 53, 69, 0.15); border-color: rgba(220, 53, 69, 0.2); color: #ffb3b3;">
+                <span class="btn-icon">🚪</span>
+                <span class="btn-text">退出</span>
+            </a>
+        </nav>
     </div>
 
-    <div class="sidebar" id="sidebar">
-        <a href="/upload.php" class="nav-item">
-            <span class="btn-icon">📤</span>
-            <span class="btn-text">上传图片</span>
-        </a>
-        <a href="/gallery.php" class="nav-item">
-            <span class="btn-icon">🎨</span>
-            <span class="btn-text">图片画廊</span>
-        </a>
-        <a href="/panel.php" class="nav-item">
-            <span class="btn-icon">📊</span>
-            <span class="btn-text">监控面板</span>
-        </a>
-        <a href="/api-panel.php" class="nav-item">
-            <span class="btn-icon">🔧</span>
-            <span class="btn-text">API管理</span>
-        </a>
-        <div class="nav-item active">
-            <span class="btn-icon">⚙️</span>
-            <span class="btn-text">系统设置</span>
-        </div>
-        <div class="sub-nav">
-            <div class="sub-nav-item active" id="sub-nav-account" onclick="switchSubTab('account')">账号管理</div>
-            <div class="sub-nav-item" id="sub-nav-ui" onclick="switchSubTab('ui')">界面配置</div>
-            <div class="sub-nav-item" id="sub-nav-backup" onclick="switchSubTab('backup')">备份还原</div>
-        </div>
-        <div class="toggle-btn" onclick="toggleSidebar()">
-            <span id="toggleIcon">⬅️</span>
-        </div>
-    </div>
-
+    <!-- 主容器 -->
     <div class="container">
+        <!-- 二级导航 Tab -->
+        <div class="sub-nav">
+            <div class="sub-nav-item active" id="sub-nav-account" onclick="switchSubTab('account')">👤 账号管理</div>
+            <div class="sub-nav-item" id="sub-nav-ui" onclick="switchSubTab('ui')">🎨 界面配置</div>
+            <div class="sub-nav-item" id="sub-nav-backup" onclick="switchSubTab('backup')">💾 备份还原</div>
+        </div>
+
         <?php if ($message): ?>
             <div class="alert alert-success"><?php echo $message; ?></div>
         <?php endif; ?>
@@ -753,25 +592,7 @@ $currentBg = $config['background_url'];
         </div>
     </div>
 
-    <a href="?logout=1" class="floating-logout" title="退出登录">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 4.001H5v14a2 2 0 0 0 2 2h8m1-5l3-3m0 0l-3-3m3 3H9"/></svg>
-    </a>
-
     <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const icon = document.getElementById('toggleIcon');
-            sidebar.classList.toggle('collapsed');
-            
-            if (sidebar.classList.contains('collapsed')) {
-                icon.innerText = '➡️';
-                localStorage.setItem('sidebarCollapsed', 'true');
-            } else {
-                icon.innerText = '⬅️';
-                localStorage.setItem('sidebarCollapsed', 'false');
-            }
-        }
-
         function switchSubTab(tabId) {
             // 切换按钮状态
             document.querySelectorAll('.sub-nav-item').forEach(btn => {
@@ -791,16 +612,6 @@ $currentBg = $config['background_url'];
 
         // 页面加载时恢复状态
         window.onload = function() {
-            // 恢复侧边栏状态
-            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-            if (isCollapsed) {
-                document.getElementById('sidebar').classList.add('collapsed');
-                document.getElementById('toggleIcon').innerText = '➡️';
-            } else {
-                document.getElementById('sidebar').classList.remove('collapsed');
-                document.getElementById('toggleIcon').innerText = '⬅️';
-            }
-
             // 恢复标签页
             const lastTab = localStorage.getItem('activeSystemTab');
             if (lastTab) {
